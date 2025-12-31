@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "666484358048",
+    "project_id": "ieee-connect-a49f2",
+    "storage_bucket": "ieee-connect-a49f2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:666484358048:android:c72af6ea82ab1574bf02c5",
+        "android_client_info": {
+          "package_name": "com.example.ieeeconnect"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "666484358048-eui162dnluaoetnmns0t55i0ao71ia1a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ieeeconnect",
+            "certificate_hash": "d7455960d0ab2640c81190c0343a3ecc02b3530e"
+          }
+        },
+        {
+          "client_id": "666484358048-pvj5emao73odqo8i59mirkeodvq0m69v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDineZeomjJnXlovNsfjSecr5kZSUgYZo8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "666484358048-pvj5emao73odqo8i59mirkeodvq0m69v.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

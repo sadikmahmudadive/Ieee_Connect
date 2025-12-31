@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="purple_700">#8B80FF</color>
+
+    <color name="primary">#8B80FF</color>
+    <color name="onPrimary">#0B0B1C</color>
+    <color name="primaryContainer">#2C2C55</color>
+    <color name="onPrimaryContainer">#E3E0FF</color>
+
+    <color name="secondary">#67E8F9</color>
+    <color name="onSecondary">#062027</color>
+
+    <color name="background">#0F172A</color>
+    <color name="onBackground">#E2E8F0</color>
+    <color name="surface">#111827</color>
+    <color name="onSurface">#E2E8F0</color>
+    <color name="surfaceVariant">#1F2937</color>
+    <color name="onSurfaceVariant">#CBD5E1</color>
+</resources>
+
