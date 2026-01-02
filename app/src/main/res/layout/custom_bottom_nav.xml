@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/customBottomNavBar"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:background="@drawable/bottom_nav_background"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:id="@+id/navIcons"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:baselineAligned="false">
+
+        <FrameLayout
+            android:id="@+id/navHome"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/navHomeInner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:duplicateParentState="true"
+                android:background="@drawable/nav_item_selector">
+
+                <ImageView
+                    android:id="@+id/iconHome"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_home_animated"
+                    android:contentDescription="Home"
+                    android:duplicateParentState="true" />
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/indicatorHome"
+                android:layout_width="36dp"
+                android:layout_height="4dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:background="@drawable/nav_indicator"
+                android:visibility="gone"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/navEvent"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/navEventInner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:duplicateParentState="true"
+                android:background="@drawable/nav_item_selector">
+
+                <ImageView
+                    android:id="@+id/iconEvent"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_event_animated"
+                    android:contentDescription="Event"
+                    android:duplicateParentState="true" />
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/indicatorEvent"
+                android:layout_width="36dp"
+                android:layout_height="4dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:background="@drawable/nav_indicator"
+                android:visibility="gone"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/navChat"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/navChatInner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:duplicateParentState="true"
+                android:background="@drawable/nav_item_selector">
+
+                <ImageView
+                    android:id="@+id/iconChat"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_chat_animated"
+                    android:contentDescription="Chat"
+                    android:duplicateParentState="true" />
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/indicatorChat"
+                android:layout_width="36dp"
+                android:layout_height="4dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:background="@drawable/nav_indicator"
+                android:visibility="gone"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/navCommittee"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/navCommitteeInner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:duplicateParentState="true"
+                android:background="@drawable/nav_item_selector">
+
+                <ImageView
+                    android:id="@+id/iconCommittee"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_committee_animated"
+                    android:contentDescription="Committee"
+                    android:duplicateParentState="true" />
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/indicatorCommittee"
+                android:layout_width="36dp"
+                android:layout_height="4dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:background="@drawable/nav_indicator"
+                android:visibility="gone"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/navProfile"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/navProfileInner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingLeft="12dp"
+                android:paddingRight="12dp"
+                android:duplicateParentState="true"
+                android:background="@drawable/nav_item_selector">
+
+                <ImageView
+                    android:id="@+id/iconProfile"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_profile_animated"
+                    android:contentDescription="Profile"
+                    android:duplicateParentState="true" />
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/indicatorProfile"
+                android:layout_width="36dp"
+                android:layout_height="4dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:background="@drawable/nav_indicator"
+                android:visibility="gone"/>
+        </FrameLayout>
+    </LinearLayout>
+</LinearLayout>

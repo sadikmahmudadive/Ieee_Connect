@@ -2,13 +2,18 @@ package com.example.ieeeconnect;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.ieeeconnect.activities.SignUpActivity;
 import com.example.ieeeconnect.databinding.ActivityLoginBinding;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -18,14 +23,12 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 public class MainActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;
     private FirebaseAuth auth;
-    private boolean isLoginMode = true;
     private GoogleSignInClient googleSignInClient;
     private ActivityResultLauncher<Intent> googleLauncher;
 
@@ -58,21 +61,25 @@ public class MainActivity extends AppCompatActivity {
 
 
         binding.loginButton.setOnClickListener(v -> {
-            String email = binding.emailInput.getText().toString().trim();
-            String password = binding.passwordInput.getText().toString();
+            String email = binding.emailInput.getText() != null ? binding.emailInput.getText().toString().trim() : "";
+            String password = binding.passwordInput.getText() != null ? binding.passwordInput.getText().toString() : "";
             if (email.isEmpty() || password.isEmpty()) {
                 toast("Email and password required");
                 return;
             }
-            if (isLoginMode) {
-                signIn(email, password);
-            } else {
-                register(email, password);
-            }
+            signIn(email, password);
         });
 
-        binding.signupRow.setOnClickListener(v -> toggleMode());
-        binding.signupLink.setOnClickListener(v -> toggleMode());
+        binding.signupLink.setOnClickListener(v -> {
+            String email = binding.emailInput.getText() != null ? binding.emailInput.getText().toString().trim() : "";
+            if (email.isEmpty()) {
+                toast("Please enter your email to sign up.");
+                return;
+            }
+            Intent intent = new Intent(MainActivity.this, SignUpActivity.class);
+            intent.putExtra("email", email);
+            startActivity(intent);
+        });
 
         binding.googleButton.setOnClickListener(v -> {
             Intent intent = googleSignInClient.getSignInIntent();
@@ -81,6 +88,35 @@ public class MainActivity extends AppCompatActivity {
 
         binding.btnFacebook.setOnClickListener(v -> toast("Facebook sign-in not implemented"));
         binding.btnApple.setOnClickListener(v -> toast("Apple sign-in not implemented"));
+
+        binding.forgotPassword.setOnClickListener(v -> handleForgotPassword());
+    }
+
+    private void handleForgotPassword() {
+        String email = binding.emailInput.getText() != null ? binding.emailInput.getText().toString().trim() : "";
+        if (email.isEmpty()) {
+            binding.emailLayout.setError("This field is required");
+            return;
+        }
+        binding.emailLayout.setError(null);
+
+        auth.sendPasswordResetEmail(email)
+                .addOnSuccessListener(aVoid -> showInstructionDialog())
+                .addOnFailureListener(e -> toast("Failed to send reset email: " + e.getMessage()));
+    }
+
+    private void showInstructionDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_instruction_sent, null);
+        builder.setView(dialogView);
+
+        final AlertDialog dialog = builder.create();
+
+        Button okayButton = dialogView.findViewById(R.id.okay_button);
+        okayButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private boolean hasSeenOnboarding() {
@@ -91,12 +127,6 @@ public class MainActivity extends AppCompatActivity {
         auth.signInWithEmailAndPassword(email, password)
                 .addOnSuccessListener(result -> navigateToDashboard())
                 .addOnFailureListener(e -> toast("Login failed: " + e.getMessage()));
-    }
-
-    private void register(String email, String password) {
-        auth.createUserWithEmailAndPassword(email, password)
-                .addOnSuccessListener(result -> navigateToDashboard())
-                .addOnFailureListener(e -> toast("Signup failed: " + e.getMessage()));
     }
 
     private void setupGoogleSignIn() {
@@ -129,12 +159,6 @@ public class MainActivity extends AppCompatActivity {
     private void navigateToDashboard() {
         startActivity(new Intent(this, DashboardActivity.class));
         finish();
-    }
-
-    private void toggleMode() {
-        isLoginMode = !isLoginMode;
-        binding.loginButton.setText(isLoginMode ? "Login" : "Sign up");
-        binding.signupLink.setText(isLoginMode ? "Create an account" : "Already have an account? Login");
     }
 
     private void toast(String msg) {

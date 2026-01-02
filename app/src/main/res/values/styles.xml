@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Removed MinimalBottomNavIndicator style because the app uses a custom nav implementation.
+         If you need to reintroduce an active-indicator style for Material BottomNavigationView,
+         restore from VCS. -->
+</resources>

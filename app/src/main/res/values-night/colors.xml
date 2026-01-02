@@ -1,22 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Night theme colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="purple_700">#8B80FF</color>
 
-    <color name="primary">#8B80FF</color>
-    <color name="onPrimary">#0B0B1C</color>
-    <color name="primaryContainer">#2C2C55</color>
-    <color name="onPrimaryContainer">#E3E0FF</color>
+    <color name="primary">#8B5CF6</color>
+    <color name="onPrimary">#FF000000</color>
+    <color name="primaryContainer">#3F2B6B</color>
+    <color name="onPrimaryContainer">#EDEBFF</color>
 
-    <color name="secondary">#67E8F9</color>
-    <color name="onSecondary">#062027</color>
+    <color name="secondary">#38BDF8</color>
+    <color name="onSecondary">#FF000000</color>
 
-    <color name="background">#0F172A</color>
-    <color name="onBackground">#E2E8F0</color>
-    <color name="surface">#111827</color>
-    <color name="onSurface">#E2E8F0</color>
-    <color name="surfaceVariant">#1F2937</color>
-    <color name="onSurfaceVariant">#CBD5E1</color>
+    <color name="background">#FF0F1724</color>
+    <color name="onBackground">#FFFFFFFF</color>
+    <color name="surface">#FF111827</color>
+    <color name="onSurface">#E6E6E6</color>
+
+    <color name="surfaceVariant">#2B2438</color>
+    <color name="onSurfaceVariant">#D1C9E8</color>
+
+    <!-- Navigation icon colors tuned for dark background -->
+    <color name="nav_icon_active">#C7B7FF</color>
+    <color name="nav_icon_inactive">#6B7280</color>
+
+    <!-- ripple color for bottom nav touch feedback in night -->
+    <color name="bottom_nav_ripple_color">#33C7B7FF</color>
 </resources>
 

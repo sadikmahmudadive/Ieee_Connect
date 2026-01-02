@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_signup"
+    app:startDestination="@id/fillProfileInfoFragment">
+
+    <fragment
+        android:id="@+id/fillProfileInfoFragment"
+        android:name="com.example.ieeeconnect.fragments.FillProfileInfoFragment"
+        android:label="fragment_fill_profile_info" >
+        <action
+            android:id="@+id/action_fillProfileInfoFragment_to_setPasswordFragment"
+            app:destination="@id/setPasswordFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/setPasswordFragment"
+        android:name="com.example.ieeeconnect.fragments.SetPasswordFragment"
+        android:label="fragment_set_password" >
+        <action
+            android:id="@+id/action_setPasswordFragment_to_accountReadyFragment"
+            app:destination="@id/accountReadyFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/accountReadyFragment"
+        android:name="com.example.ieeeconnect.fragments.AccountReadyFragment"
+        android:label="fragment_account_ready" />
+</navigation>

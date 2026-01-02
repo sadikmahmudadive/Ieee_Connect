@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">Ieee Connect</string>
     <string name="default_web_client_id">666484358048-eui162dnluaoetnmns0t55i0ao71ia1a.apps.googleusercontent.com</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_events">Events</string>
+    <string name="nav_chat">Chat</string>
+    <string name="nav_committee">Committee</string>
+    <string name="nav_profile">Profile</string>
+    <string name="profile_title">Profile</string>
+    <string name="profile_subtitle">Profile and settings</string>
+    <string name="logout">Logout</string>
 </resources>

@@ -1,6 +1,5 @@
 package com.example.ieeeconnect;
 
-import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.activity.EdgeToEdge;
@@ -9,9 +8,12 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.ieeeconnect.databinding.ActivityDashboardBinding;
+import com.example.ieeeconnect.ui.chat.ChatFragment;
+import com.example.ieeeconnect.ui.committee.CommitteeFragment;
 import com.example.ieeeconnect.ui.events.EventsFragment;
 import com.example.ieeeconnect.ui.home.HomeFragment;
-import com.google.firebase.auth.FirebaseAuth;
+import com.example.ieeeconnect.ui.profile.ProfileFragment;
+import com.example.ieeeconnect.ui.views.CustomBottomNavView;
 
 public class DashboardActivity extends AppCompatActivity {
 
@@ -24,53 +26,34 @@ public class DashboardActivity extends AppCompatActivity {
         binding = ActivityDashboardBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.topAppBar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_logout) {
-                FirebaseAuth.getInstance().signOut();
-                clearOnboardingFlag();
-                startActivity(new Intent(this, MainActivity.class));
-                finish();
-                return true;
+        CustomBottomNavView navView = binding.customBottomNavView;
+        navView.setOnTabSelectedListener(index -> {
+            switch (index) {
+                case 0:
+                    switchFragment(new HomeFragment());
+                    break;
+                case 1:
+                    switchFragment(new EventsFragment());
+                    break;
+                case 2:
+                    switchFragment(new ChatFragment());
+                    break;
+                case 3:
+                    switchFragment(new CommitteeFragment());
+                    break;
+                case 4:
+                    switchFragment(new ProfileFragment());
+                    break;
             }
-            return false;
         });
 
-        binding.bottomNav.setOnItemSelectedListener(item -> {
-            if (item.getItemId() == R.id.nav_home) {
-                switchFragment(new HomeFragment());
-                return true;
-            }
-            if (item.getItemId() == R.id.nav_events) {
-                switchFragment(new EventsFragment());
-                return true;
-            }
-            // placeholders for future tabs
-            if (item.getItemId() == R.id.nav_community) {
-                return true;
-            }
-            if (item.getItemId() == R.id.nav_chat) {
-                return true;
-            }
-            if (item.getItemId() == R.id.nav_profile) {
-                return true;
-            }
-            return false;
-        });
-
-        // default tab
-        binding.bottomNav.setSelectedItemId(R.id.nav_home);
-    }
-
-    private void clearOnboardingFlag() {
-        getSharedPreferences("ieee_prefs", MODE_PRIVATE)
-                .edit()
-                .putBoolean("onboarding_seen", false)
-                .apply();
+        // Default selection -> Home (also update nav visual state)
+        navView.selectTab(0);
     }
 
     private void switchFragment(Fragment fragment) {
         FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
-        tx.replace(R.id.fragmentContainer, fragment);
+        tx.replace(R.id.fragment_container, fragment);
         tx.commit();
     }
 }
