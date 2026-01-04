@@ -132,7 +132,7 @@ public class FillProfileInfoFragment extends Fragment {
     }
 
     private void uploadToCloudinary(Uri imageUri) {
-        CloudinaryManager.upload(imageUri.toString(), new UploadCallback() {
+        CloudinaryManager.upload(imageUri, new UploadCallback() {
             @Override
             public void onStart(String requestId) {
                 // Show progress

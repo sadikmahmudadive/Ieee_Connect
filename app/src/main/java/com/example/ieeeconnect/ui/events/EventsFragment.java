@@ -1,5 +1,6 @@
 package com.example.ieeeconnect.ui.events;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,20 +9,20 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.ieeeconnect.data.repository.EventsRepository;
+import com.example.ieeeconnect.activities.CreateEventActivity;
 import com.example.ieeeconnect.databinding.FragmentEventsBinding;
-import com.example.ieeeconnect.domain.model.Event;
+import com.example.ieeeconnect.viewmodels.EventsViewModel;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class EventsFragment extends Fragment {
 
     private FragmentEventsBinding binding;
     private EventsAdapter adapter;
-    private EventsRepository repository;
+    private EventsViewModel viewModel;
 
     @Nullable
     @Override
@@ -33,15 +34,18 @@ public class EventsFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         adapter = new EventsAdapter(new ArrayList<>());
         binding.recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recycler.setAdapter(adapter);
 
-        repository = new EventsRepository();
-        repository.loadEvents(events -> {
-            if (getActivity() == null) return;
-            getActivity().runOnUiThread(() -> adapter.setItems(events));
+        viewModel = new ViewModelProvider(this).get(EventsViewModel.class);
+        viewModel.getAllEvents().observe(getViewLifecycleOwner(), events -> {
+            adapter.setItems(events);
+        });
+
+        binding.fabCreateEvent.setOnClickListener(v -> {
+            startActivity(new Intent(getActivity(), CreateEventActivity.class));
         });
     }
 }
-

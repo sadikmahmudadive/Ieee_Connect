@@ -8,27 +8,53 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.ieeeconnect.R;
 import com.example.ieeeconnect.domain.model.Event;
+import com.example.ieeeconnect.ui.events.EventDetailActivity;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventVH> {
+/**
+ * EventsAdapter for displaying events in a RecyclerView.
+ * <p>
+ * Admin Dashboard Fragment for IEEE BUBT
+ * Only visible to users with isAdmin or role=SUPER_ADMIN/ADMIN/EXCOM
+ * Features: Quick Stats, Recent Activity, Quick Actions Grid, FAB for Broadcast
+ * Navigation to: MemberListActivity, QrScannerActivity, Event Management, Content Moderation
+ * TODO: Implement fragment_admin_dashboard.xml layout with header, grid, and FAB
+ * TODO: Implement AdminDashboardFragment.java with navigation logic
+ * TODO: Add role-based access control in main navigation
+ * TODO: Scaffold MemberListActivity.java and QrScannerActivity.java
+ * TODO: Add edit/delete event support for admins in EventsAdapter/EventDetail
+ * TODO: Implement push notification broadcaster UI
+ * TODO: Implement moderation queue for reported content
+ * TODO: Ensure initial superadmin and admin users exist in Firestore
+ */
 
-    private final List<Event> items;
+public class EventsAdapter extends ListAdapter<Event, EventsAdapter.EventVH> {
 
-    public EventsAdapter(List<Event> items) {
-        this.items = items;
+    public interface OnRsvpActionListener {
+        void onRsvp(Event event, String rsvpStatus, int position);
     }
 
-    public void setItems(List<Event> newItems) {
-        items.clear();
-        items.addAll(newItems);
-        notifyDataSetChanged();
+    private final OnRsvpActionListener rsvpListener;
+
+    public EventsAdapter(OnRsvpActionListener rsvpListener) {
+        super(DIFF_CALLBACK);
+        this.rsvpListener = rsvpListener;
+    }
+
+    public void updateEvent(Event event, int position) {
+        // For optimistic update: create a new list and submit
+        List<Event> current = new java.util.ArrayList<>(getCurrentList());
+        current.set(position, event);
+        submitList(current);
     }
 
     @NonNull
@@ -40,34 +66,56 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.EventVH> {
 
     @Override
     public void onBindViewHolder(@NonNull EventVH holder, int position) {
-        Event event = items.get(position);
+        Event event = getItem(position);
         holder.title.setText(event.getTitle());
-        holder.time.setText(event.getStartTimeIso());
+        holder.description.setText(event.getDescription());
         Glide.with(holder.banner.getContext())
                 .load(event.getBannerUrl())
                 .placeholder(R.drawable.ic_launcher_background)
                 .into(holder.banner);
+        holder.itemView.setOnClickListener(v -> {
+            EventDetailActivity.startWithTransition(
+                    (AppCompatActivity) v.getContext(),
+                    holder.banner,
+                    event
+            );
+        });
+        // RSVP button logic (optimistic UI)
+        holder.btnGoing.setOnClickListener(v -> rsvpListener.onRsvp(event, "GOING", position));
+        holder.btnInterested.setOnClickListener(v -> rsvpListener.onRsvp(event, "INTERESTED", position));
+        holder.btnNotGoing.setOnClickListener(v -> rsvpListener.onRsvp(event, "NOT_GOING", position));
+        // Optionally, update button states based on event's RSVP status
+        // (Assume event has a getRsvpStatus() method, or similar)
+        // Example:
+        // String status = event.getRsvpStatus();
+        // holder.btnGoing.setEnabled(!"GOING".equals(status));
+        // ...
     }
 
-    @Override
-    public int getItemCount() {
-        return items.size();
-    }
-
-    static class EventVH extends RecyclerView.ViewHolder {
+    public static class EventVH extends RecyclerView.ViewHolder {
         ImageView banner;
         TextView title;
-        TextView time;
-        Button interested;
-        Button going;
+        TextView description;
+        Button btnGoing, btnInterested, btnNotGoing;
         EventVH(@NonNull View itemView) {
             super(itemView);
-            banner = itemView.findViewById(R.id.eventBanner);
-            title = itemView.findViewById(R.id.eventTitle);
-            time = itemView.findViewById(R.id.eventTime);
-            interested = itemView.findViewById(R.id.rsvpButton);
-            going = itemView.findViewById(R.id.goingButton);
+            banner = itemView.findViewById(R.id.event_banner);
+            title = itemView.findViewById(R.id.event_title);
+            description = itemView.findViewById(R.id.event_description);
+            btnGoing = itemView.findViewById(R.id.btn_going);
+            btnInterested = itemView.findViewById(R.id.btn_interested);
+            btnNotGoing = itemView.findViewById(R.id.btn_not_going);
         }
     }
-}
 
+    public static final DiffUtil.ItemCallback<Event> DIFF_CALLBACK = new DiffUtil.ItemCallback<Event>() {
+        @Override
+        public boolean areItemsTheSame(@NonNull Event oldItem, @NonNull Event newItem) {
+            return oldItem.getEventId().equals(newItem.getEventId());
+        }
+        @Override
+        public boolean areContentsTheSame(@NonNull Event oldItem, @NonNull Event newItem) {
+            return oldItem.equals(newItem);
+        }
+    };
+}

@@ -6,12 +6,18 @@ import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {EventEntity.class}, version = 1, exportSchema = false)
+import com.example.ieeeconnect.db.EventEntity;
+import com.example.ieeeconnect.db.EventDao;
+import com.example.ieeeconnect.database.PendingEvent;
+import com.example.ieeeconnect.database.PendingEventDao;
+
+@Database(entities = {EventEntity.class, PendingEvent.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DB_NAME = "ieee_connect_db";
     private static volatile AppDatabase instance;
 
     public abstract EventDao eventDao();
+    public abstract PendingEventDao pendingEventDao();
 
     public static AppDatabase getInstance(Context context) {
         if (instance == null) {

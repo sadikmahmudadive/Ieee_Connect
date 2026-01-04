@@ -9,4 +9,37 @@
     <string name="profile_title">Profile</string>
     <string name="profile_subtitle">Profile and settings</string>
     <string name="logout">Logout</string>
+    <!-- Home fragment strings -->
+    <string name="offline_banner_text">You are offline. Showing cached posts.</string>
+    <string name="fab_add_desc">Add post</string>
+
+    <!-- Feed strings -->
+    <string name="post_image_desc">Feed image</string>
+    <string name="btn_interested">Interested</string>
+    <string name="btn_going">Going</string>
+    <string name="btn_not_going">Not Going</string>
+    <string name="going_count">%1$d Going</string>
+
+    <!-- Featured -->
+    <string name="featured_image_desc">Featured event image</string>
+    <string name="featured_title">Featured Event</string>
+    <string name="register_now">Register Now</string>
+
+    <!-- New menu strings -->
+    <string name="search">Search</string>
+    <string name="notifications">Notifications</string>
+
+    <!-- Admin dashboard strings -->
+    <string name="admin_console">Admin Console</string>
+    <string name="stat_total_members">Members: 0</string>
+    <string name="stat_active_events">Events: 0</string>
+    <string name="stat_pending_requests">Pending: 0</string>
+    <string name="create_event">Create Event</string>
+    <string name="post_announcement">Post Announcement</string>
+    <string name="manage_members">Manage Members</string>
+    <string name="approve_requests">Approve Requests</string>
+    <string name="scan_attendance">Scan Attendance</string>
+    <string name="broadcast_message">Broadcast Message</string>
+    <string name="manage_members_header">Manage Members</string>
+    <string name="scan_attendance_qr">Scan Attendance QR</string>
 </resources>

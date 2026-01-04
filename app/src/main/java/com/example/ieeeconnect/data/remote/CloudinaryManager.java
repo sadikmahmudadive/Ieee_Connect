@@ -1,6 +1,7 @@
 package com.example.ieeeconnect.data.remote;
 
 import android.content.Context;
+import android.net.Uri;
 
 import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.UploadCallback;
@@ -22,7 +23,7 @@ public class CloudinaryManager {
         MediaManager.init(context, config);
     }
 
-    public static void upload(String filePath, UploadCallback callback) {
-        MediaManager.get().upload(filePath).callback(callback).dispatch();
+    public static void upload(Uri fileUri, UploadCallback callback) {
+        MediaManager.get().upload(fileUri).callback(callback).dispatch();
     }
 }

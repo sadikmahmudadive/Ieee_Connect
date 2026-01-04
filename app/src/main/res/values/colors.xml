@@ -28,4 +28,5 @@
     <!-- ripple color for bottom nav touch feedback -->
     <color name="bottom_nav_ripple_color">#224F46E5</color>
 
+    <color name="ieee_primary">#3D4FFC</color>
 </resources>

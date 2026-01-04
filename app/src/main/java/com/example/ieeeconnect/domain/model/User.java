@@ -15,6 +15,10 @@ public class User {
     @Nullable
     private String photoUrl; // Cloudinary URL
 
+    // --- ADMIN FIELDS ---
+    private boolean isAdmin; // true if user is admin
+    private String role; // e.g., SUPER_ADMIN, ADMIN, EXCOM, MEMBER
+
     public User(@NonNull String id, @NonNull String name, @NonNull String email, @Nullable String bio, @Nullable String photoUrl) {
         this.id = id;
         this.name = name;
@@ -67,5 +71,20 @@ public class User {
     public void setPhotoUrl(@Nullable String photoUrl) {
         this.photoUrl = photoUrl;
     }
-}
 
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setAdmin(boolean admin) {
+        isAdmin = admin;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+}

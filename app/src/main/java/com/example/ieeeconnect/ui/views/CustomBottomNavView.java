@@ -97,7 +97,12 @@ public class CustomBottomNavView extends FrameLayout {
 
         // Respect window insets (bottom gesture bar) so nav is positioned above it
         setOnApplyWindowInsetsListener((v, insets) -> {
-            int bottom = insets.getInsets(WindowInsets.Type.systemBars()).bottom;
+            int bottom = 0;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                bottom = insets.getInsets(WindowInsets.Type.systemBars()).bottom;
+            } else {
+                bottom = insets.getSystemWindowInsetBottom();
+            }
             // add extra 12dp of margin above gesture bar
             int extra = (int) (12 * getResources().getDisplayMetrics().density);
             setPadding(getPaddingLeft(), getPaddingTop(), getPaddingRight(), bottom + extra);

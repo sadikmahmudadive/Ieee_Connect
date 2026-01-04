@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
@@ -14,7 +16,9 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.IeeeConnect">
+        android:theme="@style/Theme.IeeeConnect"
+        android:usesCleartextTraffic="true"
+        android:enableOnBackInvokedCallback="true">
         <!-- Main entry goes to MainActivity; Onboarding is secondary -->
         <activity
             android:name=".MainActivity"
@@ -44,6 +48,9 @@
             android:exported="false" />
         <activity
             android:name=".activities.AccountReadyActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.CreateEventActivity"
             android:exported="false" />
         <activity
             android:name=".LoginActivity"
