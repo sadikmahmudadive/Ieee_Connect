@@ -29,8 +29,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:paddingLeft="12dp"
-                android:paddingRight="12dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
                 android:duplicateParentState="true"
                 android:background="@drawable/nav_item_selector">
 
@@ -66,8 +66,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:paddingLeft="12dp"
-                android:paddingRight="12dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
                 android:duplicateParentState="true"
                 android:background="@drawable/nav_item_selector">
 
@@ -103,8 +103,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:paddingLeft="12dp"
-                android:paddingRight="12dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
                 android:duplicateParentState="true"
                 android:background="@drawable/nav_item_selector">
 
@@ -140,8 +140,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:paddingLeft="12dp"
-                android:paddingRight="12dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
                 android:duplicateParentState="true"
                 android:background="@drawable/nav_item_selector">
 
@@ -164,6 +164,45 @@
                 android:visibility="gone"/>
         </FrameLayout>
 
+        <!-- Admin tab (hidden by default) -->
+        <FrameLayout
+            android:id="@+id/navAdmin"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/navAdminInner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:duplicateParentState="true"
+                android:background="@drawable/nav_item_selector">
+
+                <ImageView
+                    android:id="@+id/iconAdmin"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_admin"
+                    android:contentDescription="Admin"
+                    android:duplicateParentState="true" />
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/indicatorAdmin"
+                android:layout_width="36dp"
+                android:layout_height="4dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:background="@drawable/nav_indicator"
+                android:visibility="gone"/>
+        </FrameLayout>
+
         <FrameLayout
             android:id="@+id/navProfile"
             android:layout_width="0dp"
@@ -177,8 +216,8 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:paddingLeft="12dp"
-                android:paddingRight="12dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
                 android:duplicateParentState="true"
                 android:background="@drawable/nav_item_selector">
 

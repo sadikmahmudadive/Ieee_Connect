@@ -26,13 +26,14 @@ public class CustomBottomNavView extends FrameLayout {
         void onTabSelected(int index);
     }
 
-    private FrameLayout navHome, navEvent, navChat, navCommittee, navProfile;
-    private LinearLayout navHomeInner, navEventInner, navChatInner, navCommitteeInner, navProfileInner;
-    private ImageView iconHome, iconEvent, iconChat, iconCommittee, iconProfile;
-    private View indicatorHome, indicatorEvent, indicatorChat, indicatorCommittee, indicatorProfile;
+    private FrameLayout navHome, navEvent, navChat, navCommittee, navAdmin, navProfile;
+    private LinearLayout navHomeInner, navEventInner, navChatInner, navCommitteeInner, navAdminInner, navProfileInner;
+    private ImageView iconHome, iconEvent, iconChat, iconCommittee, iconAdmin, iconProfile;
+    private View indicatorHome, indicatorEvent, indicatorChat, indicatorCommittee, indicatorAdmin, indicatorProfile;
 
     private OnTabSelectedListener listener;
     private int selected = -1;
+    private boolean adminVisible = false; // whether admin tab is currently visible
 
     public CustomBottomNavView(@NonNull Context context) {
         this(context, null);
@@ -54,24 +55,28 @@ public class CustomBottomNavView extends FrameLayout {
         navEvent = findViewById(R.id.navEvent);
         navChat = findViewById(R.id.navChat);
         navCommittee = findViewById(R.id.navCommittee);
+        navAdmin = findViewById(R.id.navAdmin);
         navProfile = findViewById(R.id.navProfile);
 
         navHomeInner = findViewById(R.id.navHomeInner);
         navEventInner = findViewById(R.id.navEventInner);
         navChatInner = findViewById(R.id.navChatInner);
         navCommitteeInner = findViewById(R.id.navCommitteeInner);
+        navAdminInner = findViewById(R.id.navAdminInner);
         navProfileInner = findViewById(R.id.navProfileInner);
 
         iconHome = findViewById(R.id.iconHome);
         iconEvent = findViewById(R.id.iconEvent);
         iconChat = findViewById(R.id.iconChat);
         iconCommittee = findViewById(R.id.iconCommittee);
+        iconAdmin = findViewById(R.id.iconAdmin);
         iconProfile = findViewById(R.id.iconProfile);
 
         indicatorHome = findViewById(R.id.indicatorHome);
         indicatorEvent = findViewById(R.id.indicatorEvent);
         indicatorChat = findViewById(R.id.indicatorChat);
         indicatorCommittee = findViewById(R.id.indicatorCommittee);
+        indicatorAdmin = findViewById(R.id.indicatorAdmin);
         indicatorProfile = findViewById(R.id.indicatorProfile);
 
         // Setup clicks
@@ -79,13 +84,19 @@ public class CustomBottomNavView extends FrameLayout {
         navEvent.setOnClickListener(v -> onItemClicked(1));
         navChat.setOnClickListener(v -> onItemClicked(2));
         navCommittee.setOnClickListener(v -> onItemClicked(3));
-        navProfile.setOnClickListener(v -> onItemClicked(4));
+        navAdmin.setOnClickListener(v -> onItemClicked(adminVisible ? 4 : -1));
+        navProfile.setOnClickListener(v -> {
+            // if admin is visible, profile index becomes 5
+            onItemClicked(adminVisible ? 5 : 4);
+        });
 
         // accessibility initializations
         iconHome.setContentDescription(context.getString(R.string.nav_home));
         iconEvent.setContentDescription(context.getString(R.string.nav_events));
         iconChat.setContentDescription(context.getString(R.string.nav_chat));
         iconCommittee.setContentDescription(context.getString(R.string.nav_committee));
+        // Use admin_console as fallback for admin tab content description
+        if (iconAdmin != null) iconAdmin.setContentDescription(context.getString(R.string.admin_console));
         iconProfile.setContentDescription(context.getString(R.string.nav_profile));
 
         // ensure indicators start hidden
@@ -93,7 +104,11 @@ public class CustomBottomNavView extends FrameLayout {
         indicatorEvent.setVisibility(View.GONE);
         indicatorChat.setVisibility(View.GONE);
         indicatorCommittee.setVisibility(View.GONE);
+        if (indicatorAdmin != null) indicatorAdmin.setVisibility(View.GONE);
         indicatorProfile.setVisibility(View.GONE);
+
+        // Admin tab hidden by default (already set in layout), track state
+        adminVisible = (navAdmin != null && navAdmin.getVisibility() == View.VISIBLE);
 
         // Respect window insets (bottom gesture bar) so nav is positioned above it
         setOnApplyWindowInsetsListener((v, insets) -> {
@@ -114,11 +129,19 @@ public class CustomBottomNavView extends FrameLayout {
         this.listener = listener;
     }
 
+    /**
+     * Public API: select a tab by logical index.
+     * Logical indices (when admin hidden): 0..4 -> home,event,chat,committee,profile
+     * When admin visible: 0..5 -> home,event,chat,committee,admin,profile
+     */
     public void selectTab(int index) {
         onItemClicked(index);
     }
 
     private void onItemClicked(int index) {
+        // ignore invalid index
+        if (index < 0) return;
+
         // Avoid re-selecting same
         if (index == selected) return;
         selected = index;
@@ -128,9 +151,9 @@ public class CustomBottomNavView extends FrameLayout {
         // Haptic feedback via system (no explicit vibrate permission required)
         performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
 
-        LinearLayout clickedInner;
-        ImageView clickedIcon;
-        View clickedIndicator;
+        LinearLayout clickedInner = null;
+        ImageView clickedIcon = null;
+        View clickedIndicator = null;
 
         switch (index) {
             case 0:
@@ -142,8 +165,17 @@ public class CustomBottomNavView extends FrameLayout {
             case 3:
                 clickedInner = navCommitteeInner; clickedIcon = iconCommittee; clickedIndicator = indicatorCommittee; break;
             case 4:
-            default:
+                if (adminVisible) { // admin
+                    clickedInner = navAdminInner; clickedIcon = iconAdmin; clickedIndicator = indicatorAdmin; break;
+                } else { // profile in non-admin mode
+                    clickedInner = navProfileInner; clickedIcon = iconProfile; clickedIndicator = indicatorProfile; break;
+                }
+            case 5:
+                // profile when admin visible
                 clickedInner = navProfileInner; clickedIcon = iconProfile; clickedIndicator = indicatorProfile; break;
+            default:
+                // unknown index
+                return;
         }
 
         // set selected state
@@ -151,37 +183,42 @@ public class CustomBottomNavView extends FrameLayout {
 
         // color tints
         int active = ContextCompat.getColor(getContext(), R.color.nav_icon_active);
-        clickedIcon.setImageTintList(android.content.res.ColorStateList.valueOf(active));
+        if (clickedIcon != null) clickedIcon.setImageTintList(android.content.res.ColorStateList.valueOf(active));
 
         // start animated drawable if available
-        Drawable d = clickedIcon.getDrawable();
-        if (d instanceof Animatable) {
-            try { ((Animatable) d).start(); } catch (Exception ignored) {}
+        if (clickedIcon != null) {
+            Drawable d = clickedIcon.getDrawable();
+            if (d instanceof Animatable) {
+                try { ((Animatable) d).start(); } catch (Exception ignored) {}
+            }
+
+            // spring pulse animation for the icon
+            startSpringPulse(clickedIcon);
         }
 
-        // spring pulse animation for the icon
-        startSpringPulse(clickedIcon);
-
         // show indicator with small animation
-        showIndicator(clickedIndicator);
+        if (clickedIndicator != null) showIndicator(clickedIndicator);
 
         // announce for accessibility
-        if (getContext() != null) {
+        if (getContext() != null && clickedIcon != null) {
             String announce = clickedIcon.getContentDescription() != null ? clickedIcon.getContentDescription().toString() : "";
             announceForAccessibility(announce + " selected");
         }
 
-        // call listener
-        if (listener != null) listener.onTabSelected(index);
+        // call listener (map internal indices back to logical indices for listener)
+        if (listener != null) {
+            listener.onTabSelected(index);
+        }
     }
 
     private void resetAll() {
         // reset inner states
-        navHomeInner.setSelected(false);
-        navEventInner.setSelected(false);
-        navChatInner.setSelected(false);
-        navCommitteeInner.setSelected(false);
-        navProfileInner.setSelected(false);
+        if (navHomeInner != null) navHomeInner.setSelected(false);
+        if (navEventInner != null) navEventInner.setSelected(false);
+        if (navChatInner != null) navChatInner.setSelected(false);
+        if (navCommitteeInner != null) navCommitteeInner.setSelected(false);
+        if (navAdminInner != null) navAdminInner.setSelected(false);
+        if (navProfileInner != null) navProfileInner.setSelected(false);
 
         // stop animatable drawables and tint to inactive
         int inactive = ContextCompat.getColor(getContext(), R.color.nav_icon_inactive);
@@ -189,6 +226,7 @@ public class CustomBottomNavView extends FrameLayout {
         stopAnimAndTint(iconEvent, inactive);
         stopAnimAndTint(iconChat, inactive);
         stopAnimAndTint(iconCommittee, inactive);
+        stopAnimAndTint(iconAdmin, inactive);
         stopAnimAndTint(iconProfile, inactive);
 
         // hide indicators
@@ -196,6 +234,7 @@ public class CustomBottomNavView extends FrameLayout {
         hideIndicator(indicatorEvent);
         hideIndicator(indicatorChat);
         hideIndicator(indicatorCommittee);
+        if (indicatorAdmin != null) hideIndicator(indicatorAdmin);
         hideIndicator(indicatorProfile);
     }
 
@@ -235,6 +274,7 @@ public class CustomBottomNavView extends FrameLayout {
     }
 
     private void showIndicator(View v) {
+        if (v == null) return;
         v.setAlpha(0f);
         v.setScaleX(0.7f);
         v.setVisibility(View.VISIBLE);
@@ -242,6 +282,26 @@ public class CustomBottomNavView extends FrameLayout {
     }
 
     private void hideIndicator(View v) {
+        if (v == null) return;
         v.animate().alpha(0f).scaleX(0.7f).setDuration(140).withEndAction(() -> v.setVisibility(View.GONE)).start();
     }
+
+    // Public helper to show/hide admin tab depending on user role.
+    public void setAdminVisible(boolean visible) {
+        if (navAdmin == null) return;
+        adminVisible = visible;
+        navAdmin.setVisibility(visible ? View.VISIBLE : View.GONE);
+        // If admin tab is shown and we currently have profile selected (index 4), shift to profile index 5
+        if (!visible && selected == 4) {
+            // do nothing special; in non-admin mode index 4 maps to profile
+        }
+        // If admin becomes visible and profile was selected (index 4), remap selection to profile's new index
+        if (visible && selected == 4) {
+            // profile is now index 5, update selected and visuals
+            selected = -1; // force reselect
+            selectTab(5);
+        }
+    }
+
+    public boolean isAdminVisible() { return adminVisible; }
 }

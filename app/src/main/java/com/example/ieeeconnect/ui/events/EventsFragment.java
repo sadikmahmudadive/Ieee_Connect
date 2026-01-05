@@ -24,6 +24,10 @@ public class EventsFragment extends Fragment {
     private EventsAdapter adapter;
     private EventsViewModel viewModel;
 
+    private EventsAdapter.OnRsvpActionListener rsvpListener = (event, rsvpStatus, position) -> {
+        // TODO: Implement RSVP logic
+    };
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -35,13 +39,13 @@ public class EventsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        adapter = new EventsAdapter(new ArrayList<>());
+        adapter = new EventsAdapter(rsvpListener);
         binding.recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recycler.setAdapter(adapter);
 
         viewModel = new ViewModelProvider(this).get(EventsViewModel.class);
         viewModel.getAllEvents().observe(getViewLifecycleOwner(), events -> {
-            adapter.setItems(events);
+            adapter.submitList(events);
         });
 
         binding.fabCreateEvent.setOnClickListener(v -> {

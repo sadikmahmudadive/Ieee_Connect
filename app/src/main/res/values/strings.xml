@@ -6,6 +6,7 @@
     <string name="nav_chat">Chat</string>
     <string name="nav_committee">Committee</string>
     <string name="nav_profile">Profile</string>
+    <string name="nav_admin">Admin</string>
     <string name="profile_title">Profile</string>
     <string name="profile_subtitle">Profile and settings</string>
     <string name="logout">Logout</string>
@@ -42,4 +43,11 @@
     <string name="broadcast_message">Broadcast Message</string>
     <string name="manage_members_header">Manage Members</string>
     <string name="scan_attendance_qr">Scan Attendance QR</string>
+    <string name="admin_dashboard_stats_placeholder">Stats: Members, Events, Requests</string>
+
+    <!-- LoginActivity strings -->
+    <string name="error_email_required">Email is required</string>
+    <string name="error_password_required">Password is required</string>
+    <string name="signing_in">Signing in...</string>
+    <string name="log_in">Log In</string>
 </resources>

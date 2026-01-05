@@ -192,7 +192,7 @@ public class EventRepository {
         List<Event> updated = new ArrayList<>();
         for (Event e : current) updated.add(e);
 
-        Event copy = new Event(target.getEventId(), target.getTitle(), target.getDescription(), target.getEventTime(), target.getBannerUrl(), target.getCreatedByUserId(), new ArrayList<>(target.getGoingUserIds()), new ArrayList<>(target.getInterestedUserIds()));
+        Event copy = new Event(target.getEventId(), target.getTitle(), target.getDescription(), target.getEventTime(), target.getBannerUrl(), target.getCreatedByUserId(), new ArrayList<>(target.getGoingUserIds()), new ArrayList<>(target.getInterestedUserIds()), target.getLocationName(), target.getStartTime(), target.getEndTime());
 
         if (wasGoing) {
             copy.getGoingUserIds().remove(userId);
@@ -282,7 +282,7 @@ public class EventRepository {
         List<Event> updated = new ArrayList<>();
         for (Event e : current) updated.add(e);
 
-        Event copy = new Event(target.getEventId(), target.getTitle(), target.getDescription(), target.getEventTime(), target.getBannerUrl(), target.getCreatedByUserId(), new ArrayList<>(target.getGoingUserIds()), new ArrayList<>(target.getInterestedUserIds()));
+        Event copy = new Event(target.getEventId(), target.getTitle(), target.getDescription(), target.getEventTime(), target.getBannerUrl(), target.getCreatedByUserId(), new ArrayList<>(target.getGoingUserIds()), new ArrayList<>(target.getInterestedUserIds()), target.getLocationName(), target.getStartTime(), target.getEndTime());
 
         if (wasInterested) {
             copy.getInterestedUserIds().remove(userId);

@@ -29,6 +29,10 @@ public class Event {
     private List<String> goingUserIds;
     @NonNull
     private List<String> interestedUserIds;
+    @Nullable
+    private String locationName;
+    private long startTime;
+    private long endTime;
 
     public Event() {
         // Default constructor required for calls to DataSnapshot.getValue(Event.class)
@@ -36,7 +40,7 @@ public class Event {
 
     public Event(@NonNull String eventId, @NonNull String title, @NonNull String description, long eventTime,
                  @Nullable String bannerUrl, @Nullable String createdByUserId, @NonNull List<String> goingUserIds,
-                 @NonNull List<String> interestedUserIds) {
+                 @NonNull List<String> interestedUserIds, @Nullable String locationName, long startTime, long endTime) {
         this.eventId = eventId;
         this.title = title;
         this.description = description;
@@ -45,6 +49,9 @@ public class Event {
         this.createdByUserId = createdByUserId;
         this.goingUserIds = goingUserIds;
         this.interestedUserIds = interestedUserIds;
+        this.locationName = locationName;
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 
     @NonNull
@@ -77,4 +84,30 @@ public class Event {
     @NonNull
     public List<String> getInterestedUserIds() { return interestedUserIds; }
     public void setInterestedUserIds(@NonNull List<String> interestedUserIds) { this.interestedUserIds = interestedUserIds; }
+
+    @Nullable
+    public String getLocationName() { return locationName; }
+    public void setLocationName(@Nullable String locationName) { this.locationName = locationName; }
+    public long getStartTime() { return startTime; }
+    public void setStartTime(long startTime) { this.startTime = startTime; }
+    public long getEndTime() { return endTime; }
+    public void setEndTime(long endTime) { this.endTime = endTime; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Event event = (Event) o;
+        return eventId.equals(event.eventId) &&
+                title.equals(event.title) &&
+                description.equals(event.description) &&
+                eventTime == event.eventTime &&
+                startTime == event.startTime &&
+                endTime == event.endTime &&
+                ((bannerUrl == null && event.bannerUrl == null) || (bannerUrl != null && bannerUrl.equals(event.bannerUrl))) &&
+                ((createdByUserId == null && event.createdByUserId == null) || (createdByUserId != null && createdByUserId.equals(event.createdByUserId))) &&
+                ((locationName == null && event.locationName == null) || (locationName != null && locationName.equals(event.locationName))) &&
+                goingUserIds.equals(event.goingUserIds) &&
+                interestedUserIds.equals(event.interestedUserIds);
+    }
 }

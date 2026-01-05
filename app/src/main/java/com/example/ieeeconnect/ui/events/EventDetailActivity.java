@@ -58,7 +58,7 @@ public class EventDetailActivity extends AppCompatActivity {
 
         titleText.setText(event.getTitle());
         descriptionText.setText(event.getDescription());
-        timeText.setText(/* format event.getStartTime() and getEndTime() */ "");
+        timeText.setText(formatEventTime(event.getStartTime(), event.getEndTime()));
         locationText.setText(event.getLocationName());
         collapsingToolbar.setTitle(event.getTitle());
         Glide.with(this).load(event.getBannerUrl()).into(bannerImage);
@@ -86,5 +86,14 @@ public class EventDetailActivity extends AppCompatActivity {
                 Pair.create(sharedImage, "eventBannerTransition")
         );
         activity.startActivity(intent, options.toBundle());
+    }
+
+    private String formatEventTime(long start, long end) {
+        // Simple formatting, you can improve as needed
+        java.text.DateFormat df = android.text.format.DateFormat.getMediumDateFormat(this);
+        java.text.DateFormat tf = android.text.format.DateFormat.getTimeFormat(this);
+        String startStr = df.format(new java.util.Date(start)) + " " + tf.format(new java.util.Date(start));
+        String endStr = df.format(new java.util.Date(end)) + " " + tf.format(new java.util.Date(end));
+        return startStr + " - " + endStr;
     }
 }

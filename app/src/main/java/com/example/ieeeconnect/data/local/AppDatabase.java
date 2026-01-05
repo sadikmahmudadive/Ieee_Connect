@@ -3,8 +3,7 @@ package com.example.ieeeconnect.data.local;
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {MessageEntity.class}, version = 1, exportSchema = false)
+@Database(entities = {MessageEntity.class}, version = 2, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract MessageDao messageDao();
 }
-

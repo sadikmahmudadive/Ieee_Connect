@@ -77,7 +77,7 @@ public class EventsAdapter extends ListAdapter<Event, EventsAdapter.EventVH> {
             EventDetailActivity.startWithTransition(
                     (AppCompatActivity) v.getContext(),
                     holder.banner,
-                    event
+                    event.getEventId()
             );
         });
         // RSVP button logic (optimistic UI)

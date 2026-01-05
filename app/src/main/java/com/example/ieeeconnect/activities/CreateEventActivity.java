@@ -85,7 +85,7 @@ public class CreateEventActivity extends AppCompatActivity {
                 return;
             }
 
-            Event event = new Event(UUID.randomUUID().toString(), title, description, System.currentTimeMillis(), bannerUrl, userId, new ArrayList<>(), new ArrayList<>());
+            Event event = new Event(UUID.randomUUID().toString(), title, description, System.currentTimeMillis(), bannerUrl, userId, new ArrayList<>(), new ArrayList<>(), null, 0, 0);
 
             FirebaseFirestore.getInstance().collection("events")
                     .add(event)

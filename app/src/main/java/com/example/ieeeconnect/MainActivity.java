@@ -1,5 +1,6 @@
 package com.example.ieeeconnect;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -24,6 +25,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -41,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
 
         auth = FirebaseAuth.getInstance();
         if (auth.getCurrentUser() != null) {
-            navigateToDashboard();
+            // If already signed in, check admin role and navigate accordingly
+            checkAdminAndNavigate();
             return;
         }
         if (!hasSeenOnboarding()) {
@@ -124,9 +127,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void signIn(String email, String password) {
+        binding.loginButton.setEnabled(false);
         auth.signInWithEmailAndPassword(email, password)
-                .addOnSuccessListener(result -> navigateToDashboard())
-                .addOnFailureListener(e -> toast("Login failed: " + e.getMessage()));
+                .addOnSuccessListener(result -> {
+                    // After successful sign-in, perform admin check and navigate accordingly
+                    checkAdminAndNavigate();
+                })
+                .addOnFailureListener(e -> {
+                    binding.loginButton.setEnabled(true);
+                    toast("Login failed: " + e.getMessage());
+                });
     }
 
     private void setupGoogleSignIn() {
@@ -142,7 +152,11 @@ public class MainActivity extends AppCompatActivity {
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
-                firebaseAuthWithGoogle(account.getIdToken());
+                if (account != null && account.getIdToken() != null) {
+                    firebaseAuthWithGoogle(account.getIdToken());
+                } else {
+                    toast("Google sign-in failed (no token)");
+                }
             } catch (ApiException e) {
                 toast("Google sign-in failed");
             }
@@ -151,9 +165,76 @@ public class MainActivity extends AppCompatActivity {
 
     private void firebaseAuthWithGoogle(String idToken) {
         AuthCredential credential = GoogleAuthProvider.getCredential(idToken, null);
+        binding.loginButton.setEnabled(false);
         auth.signInWithCredential(credential)
-                .addOnSuccessListener(result -> navigateToDashboard())
-                .addOnFailureListener(e -> toast("Google auth failed: " + e.getMessage()));
+                .addOnSuccessListener(result -> {
+                    // After successful Google sign-in, perform admin check and navigate accordingly
+                    checkAdminAndNavigate();
+                })
+                .addOnFailureListener(e -> {
+                    binding.loginButton.setEnabled(true);
+                    toast("Google auth failed: " + e.getMessage());
+                });
+    }
+
+    // New helper: fetch users/{uid} and navigate to admin or normal dashboard
+    private void checkAdminAndNavigate() {
+        if (auth.getCurrentUser() == null) {
+            navigateToDashboard();
+            return;
+        }
+        String userId = auth.getCurrentUser().getUid();
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    android.util.Log.d("MainActivity", "User doc: " + documentSnapshot.getData());
+                    boolean isAdmin = false;
+                    String role = "";
+                    if (documentSnapshot.exists()) {
+                        Object isAdminObj = documentSnapshot.get("isAdmin");
+                        Object roleObj = documentSnapshot.get("role");
+                        if (isAdminObj instanceof Boolean) {
+                            isAdmin = (Boolean) isAdminObj;
+                        } else if (isAdminObj instanceof String) {
+                            String val = ((String) isAdminObj).trim().toLowerCase();
+                            isAdmin = val.equals("true") || val.equals("1") || val.equals("yes");
+                        } else if (isAdminObj != null) {
+                            String val = isAdminObj.toString().trim().toLowerCase();
+                            isAdmin = val.equals("true") || val.equals("1") || val.equals("yes");
+                        }
+                        if (roleObj != null) {
+                            role = roleObj.toString().trim();
+                        }
+                    } else {
+                        android.util.Log.e("MainActivity", "User document does not exist for UID: " + userId);
+                    }
+                    android.util.Log.d("MainActivity", "isAdmin: " + isAdmin + ", role: " + role);
+
+                    boolean isAdminRole = role.equalsIgnoreCase("ADMIN") || role.equalsIgnoreCase("SUPER_ADMIN");
+                    if (isAdmin || isAdminRole) {
+                        android.util.Log.i("MainActivity", "Navigating to AdminDashboard via DashboardActivity");
+                        Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
+                        intent.putExtra("isAdmin", true);
+                        intent.putExtra("role", role);
+                        try {
+                            startActivity(intent);
+                        } catch (ActivityNotFoundException ex) {
+                            android.util.Log.e("MainActivity", "Failed to start DashboardActivity: " + ex.getMessage());
+                            navigateToDashboard();
+                            return;
+                        }
+                        finish();
+                    } else {
+                        navigateToDashboard();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    android.util.Log.e("MainActivity", "Failed to fetch user info: " + e.getMessage());
+                    // fallback to normal dashboard
+                    navigateToDashboard();
+                });
     }
 
     private void navigateToDashboard() {

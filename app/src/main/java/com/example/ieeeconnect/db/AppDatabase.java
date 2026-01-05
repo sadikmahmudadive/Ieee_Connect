@@ -11,7 +11,7 @@ import com.example.ieeeconnect.db.EventDao;
 import com.example.ieeeconnect.database.PendingEvent;
 import com.example.ieeeconnect.database.PendingEventDao;
 
-@Database(entities = {EventEntity.class, PendingEvent.class}, version = 2, exportSchema = false)
+@Database(entities = {EventEntity.class, PendingEvent.class}, version = 3, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     private static final String DB_NAME = "ieee_connect_db";
     private static volatile AppDatabase instance;

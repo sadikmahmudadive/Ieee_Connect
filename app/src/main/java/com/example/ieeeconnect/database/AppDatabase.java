@@ -10,7 +10,7 @@ import androidx.room.TypeConverters;
 import com.example.ieeeconnect.database.converters.ListToStringConverter;
 import com.example.ieeeconnect.domain.model.Event;
 
-@Database(entities = {Event.class, PendingEvent.class}, version = 11, exportSchema = false)
+@Database(entities = {Event.class, PendingEvent.class}, version = 12, exportSchema = false)
 @TypeConverters(ListToStringConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract EventDao eventDao();

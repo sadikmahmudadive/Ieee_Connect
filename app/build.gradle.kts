@@ -44,6 +44,8 @@ kapt {
     arguments {
         arg("room.schemaLocation", "$projectDir/schemas")
         arg("room.incremental", "true")
+        arg("room.expandProjection", "true")
+        // Disable schema verification to avoid native library issues on Windows
         arg("room.verifySchema", "false")
     }
 }
@@ -90,7 +92,9 @@ dependencies {
     // Room
     implementation(libs.room.runtime)
     kapt(libs.room.compiler)
-    kapt(libs.sqlite.jdbc) // Ensure this alias matches the one in libs.versions.toml
+
+    // sqlite-jdbc for kapt (Room verifier on Windows)
+    kapt(libs.sqlite.jdbc)
 
     // Animations & polish
     implementation(libs.lottie)

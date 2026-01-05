@@ -56,7 +56,14 @@ public class SetPasswordActivity extends AppCompatActivity {
                         user.put("lastName", lastName);
                         user.put("profileImageUrl", profileImageUrl);
                         user.put("email", email);
-
+                        // Set admin role if email matches
+                        if ("superadmin@gmail.com".equalsIgnoreCase(email) || "masteradmin@gmail.com".equalsIgnoreCase(email)) {
+                            user.put("isAdmin", true);
+                            user.put("role", "ADMIN");
+                        } else {
+                            user.put("isAdmin", false);
+                            user.put("role", "MEMBER");
+                        }
                         firestore.collection("users").document(userId)
                                 .set(user)
                                 .addOnSuccessListener(aVoid -> {
