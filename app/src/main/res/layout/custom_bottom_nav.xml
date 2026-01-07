@@ -6,6 +6,7 @@
        navHomeInner, navEventInner, navChatInner, navCommitteeInner, navAdminInner, navProfileInner
        iconHome, iconEvent, iconChat, iconCommittee, iconAdmin, iconProfile
        indicatorHome, indicatorEvent, indicatorChat, indicatorCommittee, indicatorAdmin, indicatorProfile
+       glowHome, glowEvent, glowChat, glowCommittee, glowAdmin, glowProfile added for glow effect
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -22,8 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:gravity="center"
-        android:weightSum="6">
+        android:gravity="center">
 
         <!-- Home -->
         <FrameLayout
@@ -35,18 +35,28 @@
             android:clickable="true"
             android:focusable="true">
 
-            <LinearLayout
+            <FrameLayout
                 android:id="@+id/navHomeInner"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center"
+                android:foregroundGravity="center"
                 android:layout_gravity="center">
+
+                <!-- Glow behind the icon (hidden by default) -->
+                <ImageView
+                    android:id="@+id/glowHome"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    android:src="@drawable/nav_glow"
+                    android:contentDescription="@null" />
 
                 <ImageView
                     android:id="@+id/iconHome"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/ic_home"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_home"/>
@@ -56,9 +66,10 @@
                     android:layout_width="24dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
+                    android:layout_gravity="bottom|center_horizontal"
                     android:background="@drawable/nav_indicator"
                     android:visibility="gone"/>
-            </LinearLayout>
+            </FrameLayout>
         </FrameLayout>
 
         <!-- Events -->
@@ -71,17 +82,26 @@
             android:clickable="true"
             android:focusable="true">
 
-            <LinearLayout
+            <FrameLayout
                 android:id="@+id/navEventInner"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:foregroundGravity="center">
+
+                <ImageView
+                    android:id="@+id/glowEvent"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    android:src="@drawable/nav_glow"
+                    android:contentDescription="@null" />
 
                 <ImageView
                     android:id="@+id/iconEvent"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/ic_events"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_events"/>
@@ -91,9 +111,10 @@
                     android:layout_width="24dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
+                    android:layout_gravity="bottom|center_horizontal"
                     android:background="@drawable/nav_indicator"
                     android:visibility="gone"/>
-            </LinearLayout>
+            </FrameLayout>
         </FrameLayout>
 
         <!-- Chat -->
@@ -106,17 +127,26 @@
             android:clickable="true"
             android:focusable="true">
 
-            <LinearLayout
+            <FrameLayout
                 android:id="@+id/navChatInner"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:foregroundGravity="center">
+
+                <ImageView
+                    android:id="@+id/glowChat"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    android:src="@drawable/nav_glow"
+                    android:contentDescription="@null" />
 
                 <ImageView
                     android:id="@+id/iconChat"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/ic_chat"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_chat"/>
@@ -126,9 +156,10 @@
                     android:layout_width="24dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
+                    android:layout_gravity="bottom|center_horizontal"
                     android:background="@drawable/nav_indicator"
                     android:visibility="gone"/>
-            </LinearLayout>
+            </FrameLayout>
         </FrameLayout>
 
         <!-- Committee -->
@@ -141,17 +172,26 @@
             android:clickable="true"
             android:focusable="true">
 
-            <LinearLayout
+            <FrameLayout
                 android:id="@+id/navCommitteeInner"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:foregroundGravity="center">
+
+                <ImageView
+                    android:id="@+id/glowCommittee"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    android:src="@drawable/nav_glow"
+                    android:contentDescription="@null" />
 
                 <ImageView
                     android:id="@+id/iconCommittee"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/ic_committee"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_committee"/>
@@ -161,9 +201,10 @@
                     android:layout_width="24dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
+                    android:layout_gravity="bottom|center_horizontal"
                     android:background="@drawable/nav_indicator"
                     android:visibility="gone"/>
-            </LinearLayout>
+            </FrameLayout>
         </FrameLayout>
 
         <!-- Admin (may be hidden by code) -->
@@ -177,17 +218,26 @@
             android:focusable="true"
             android:visibility="gone">
 
-            <LinearLayout
+            <FrameLayout
                 android:id="@+id/navAdminInner"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:foregroundGravity="center">
+
+                <ImageView
+                    android:id="@+id/glowAdmin"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    android:src="@drawable/nav_glow"
+                    android:contentDescription="@null" />
 
                 <ImageView
                     android:id="@+id/iconAdmin"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/ic_admin"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_admin"/>
@@ -197,9 +247,10 @@
                     android:layout_width="24dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
+                    android:layout_gravity="bottom|center_horizontal"
                     android:background="@drawable/nav_indicator"
                     android:visibility="gone"/>
-            </LinearLayout>
+            </FrameLayout>
         </FrameLayout>
 
         <!-- Profile -->
@@ -212,17 +263,26 @@
             android:clickable="true"
             android:focusable="true">
 
-            <LinearLayout
+            <FrameLayout
                 android:id="@+id/navProfileInner"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:foregroundGravity="center">
+
+                <ImageView
+                    android:id="@+id/glowProfile"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    android:src="@drawable/nav_glow"
+                    android:contentDescription="@null" />
 
                 <ImageView
                     android:id="@+id/iconProfile"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center"
                     android:src="@drawable/ic_profile"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_profile"/>
@@ -232,9 +292,10 @@
                     android:layout_width="24dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
+                    android:layout_gravity="bottom|center_horizontal"
                     android:background="@drawable/nav_indicator"
                     android:visibility="gone"/>
-            </LinearLayout>
+            </FrameLayout>
         </FrameLayout>
 
     </LinearLayout>
