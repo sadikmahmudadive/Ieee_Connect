@@ -1,13 +1,16 @@
 package com.example.ieeeconnect.ui.views;
 
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.drawable.Animatable;
-import android.graphics.drawable.Drawable;
+import android.graphics.Color;
 import android.util.AttributeSet;
-import android.view.HapticFeedbackConstants;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowInsets;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -15,32 +18,28 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.dynamicanimation.animation.SpringAnimation;
-import androidx.dynamicanimation.animation.SpringForce;
 
 import com.example.ieeeconnect.R;
 
-public class CustomBottomNavView extends FrameLayout {
+public class CustomBottomNavView extends LinearLayout {
 
-    public interface OnTabSelectedListener {
-        void onTabSelected(int index);
-    }
+    private static final int ANIMATION_DURATION = 300;
+    private ImageView selectedIcon;
+    private int currentSelectedPosition = 0;
 
-    private FrameLayout navHome, navEvent, navChat, navCommittee, navAdmin, navProfile;
-    private LinearLayout navHomeInner, navEventInner, navChatInner, navCommitteeInner, navAdminInner, navProfileInner;
-    private ImageView iconHome, iconEvent, iconChat, iconCommittee, iconAdmin, iconProfile;
-    private View indicatorHome, indicatorEvent, indicatorChat, indicatorCommittee, indicatorAdmin, indicatorProfile;
-
-    private OnTabSelectedListener listener;
-    private int selected = -1;
-    private boolean adminVisible = false; // whether admin tab is currently visible
+    private NavItem[] navItems;
+    private NavItem adminNavItem;
+    private boolean adminVisible = false;
+    private OnNavigationItemSelectedListener listener;
 
     public CustomBottomNavView(@NonNull Context context) {
-        this(context, null);
+        super(context);
+        init(context);
     }
 
     public CustomBottomNavView(@NonNull Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
+        super(context, attrs);
+        init(context);
     }
 
     public CustomBottomNavView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
@@ -49,259 +48,319 @@ public class CustomBottomNavView extends FrameLayout {
     }
 
     private void init(Context context) {
+        setOrientation(HORIZONTAL);
+        setGravity(Gravity.CENTER);
+        setBackgroundResource(R.drawable.custom_bottom_nav_background);
+
+        // Add elevation and shadow
+        setElevation(16f);
+
+        // Add padding
+        int paddingVertical = (int) (context.getResources().getDisplayMetrics().density * 12);
+        int paddingHorizontal = (int) (context.getResources().getDisplayMetrics().density * 8);
+        setPadding(paddingHorizontal, paddingVertical, paddingHorizontal, paddingVertical);
+
+        // Inflate layout defined in res/layout/custom_bottom_nav.xml and wire it up
         LayoutInflater.from(context).inflate(R.layout.custom_bottom_nav, this, true);
 
-        navHome = findViewById(R.id.navHome);
-        navEvent = findViewById(R.id.navEvent);
-        navChat = findViewById(R.id.navChat);
-        navCommittee = findViewById(R.id.navCommittee);
-        navAdmin = findViewById(R.id.navAdmin);
-        navProfile = findViewById(R.id.navProfile);
-
-        navHomeInner = findViewById(R.id.navHomeInner);
-        navEventInner = findViewById(R.id.navEventInner);
-        navChatInner = findViewById(R.id.navChatInner);
-        navCommitteeInner = findViewById(R.id.navCommitteeInner);
-        navAdminInner = findViewById(R.id.navAdminInner);
-        navProfileInner = findViewById(R.id.navProfileInner);
-
-        iconHome = findViewById(R.id.iconHome);
-        iconEvent = findViewById(R.id.iconEvent);
-        iconChat = findViewById(R.id.iconChat);
-        iconCommittee = findViewById(R.id.iconCommittee);
-        iconAdmin = findViewById(R.id.iconAdmin);
-        iconProfile = findViewById(R.id.iconProfile);
-
-        indicatorHome = findViewById(R.id.indicatorHome);
-        indicatorEvent = findViewById(R.id.indicatorEvent);
-        indicatorChat = findViewById(R.id.indicatorChat);
-        indicatorCommittee = findViewById(R.id.indicatorCommittee);
-        indicatorAdmin = findViewById(R.id.indicatorAdmin);
-        indicatorProfile = findViewById(R.id.indicatorProfile);
-
-        // Setup clicks
-        navHome.setOnClickListener(v -> onItemClicked(0));
-        navEvent.setOnClickListener(v -> onItemClicked(1));
-        navChat.setOnClickListener(v -> onItemClicked(2));
-        navCommittee.setOnClickListener(v -> onItemClicked(3));
-        navAdmin.setOnClickListener(v -> onItemClicked(adminVisible ? 4 : -1));
-        navProfile.setOnClickListener(v -> {
-            // if admin is visible, profile index becomes 5
-            onItemClicked(adminVisible ? 5 : 4);
-        });
-
-        // accessibility initializations
-        iconHome.setContentDescription(context.getString(R.string.nav_home));
-        iconEvent.setContentDescription(context.getString(R.string.nav_events));
-        iconChat.setContentDescription(context.getString(R.string.nav_chat));
-        iconCommittee.setContentDescription(context.getString(R.string.nav_committee));
-        // Use admin_console as fallback for admin tab content description
-        if (iconAdmin != null) iconAdmin.setContentDescription(context.getString(R.string.admin_console));
-        iconProfile.setContentDescription(context.getString(R.string.nav_profile));
-
-        // ensure indicators start hidden
-        indicatorHome.setVisibility(View.GONE);
-        indicatorEvent.setVisibility(View.GONE);
-        indicatorChat.setVisibility(View.GONE);
-        indicatorCommittee.setVisibility(View.GONE);
-        if (indicatorAdmin != null) indicatorAdmin.setVisibility(View.GONE);
-        indicatorProfile.setVisibility(View.GONE);
-
-        // Admin tab hidden by default (already set in layout), track state
-        adminVisible = (navAdmin != null && navAdmin.getVisibility() == View.VISIBLE);
-
-        // Respect window insets (bottom gesture bar) so nav is positioned above it
-        setOnApplyWindowInsetsListener((v, insets) -> {
-            int bottom = 0;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                bottom = insets.getInsets(WindowInsets.Type.systemBars()).bottom;
-            } else {
-                bottom = insets.getSystemWindowInsetBottom();
-            }
-            // add extra 12dp of margin above gesture bar
-            int extra = (int) (12 * getResources().getDisplayMetrics().density);
-            setPadding(getPaddingLeft(), getPaddingTop(), getPaddingRight(), bottom + extra);
-            return insets;
-        });
+        // Initialize navigation items
+        initNavItems(context);
     }
 
-    public void setOnTabSelectedListener(OnTabSelectedListener listener) {
-        this.listener = listener;
+    private void initNavItems(Context context) {
+        // Tabs wired to layout IDs: navHome, navEvent, navChat, navCommittee, navProfile and optional navAdmin
+        navItems = new NavItem[5];
+
+        // resource ids for the base icons (match the drawables used in layout)
+        int[] iconResIds = {
+                R.drawable.ic_home,
+                R.drawable.ic_events,
+                R.drawable.ic_chat,
+                R.drawable.ic_committee,
+                R.drawable.ic_profile
+        };
+
+        int[] ids = {R.id.navigation_home, R.id.navigation_events, R.id.navigation_chat,
+                R.id.navigation_committee, R.id.navigation_profile};
+
+        // find and wrap views from inflated layout
+        FrameLayout homeFrame = findViewById(R.id.navHome);
+        ImageView homeIcon = findViewById(R.id.iconHome);
+        View homeIndicator = findViewById(R.id.indicatorHome);
+        navItems[0] = new NavItem(homeFrame, homeIcon, homeIndicator, iconResIds[0], ids[0]);
+
+        FrameLayout eventFrame = findViewById(R.id.navEvent);
+        ImageView eventIcon = findViewById(R.id.iconEvent);
+        View eventIndicator = findViewById(R.id.indicatorEvent);
+        navItems[1] = new NavItem(eventFrame, eventIcon, eventIndicator, iconResIds[1], ids[1]);
+
+        FrameLayout chatFrame = findViewById(R.id.navChat);
+        ImageView chatIcon = findViewById(R.id.iconChat);
+        View chatIndicator = findViewById(R.id.indicatorChat);
+        navItems[2] = new NavItem(chatFrame, chatIcon, chatIndicator, iconResIds[2], ids[2]);
+
+        FrameLayout committeeFrame = findViewById(R.id.navCommittee);
+        ImageView committeeIcon = findViewById(R.id.iconCommittee);
+        View committeeIndicator = findViewById(R.id.indicatorCommittee);
+        navItems[3] = new NavItem(committeeFrame, committeeIcon, committeeIndicator, iconResIds[3], ids[3]);
+
+        FrameLayout profileFrame = findViewById(R.id.navProfile);
+        ImageView profileIcon = findViewById(R.id.iconProfile);
+        View profileIndicator = findViewById(R.id.indicatorProfile);
+        navItems[4] = new NavItem(profileFrame, profileIcon, profileIndicator, iconResIds[4], ids[4]);
+
+        // Admin (may be hidden)
+        FrameLayout adminFrame = findViewById(R.id.navAdmin);
+        if (adminFrame != null) {
+            ImageView adminIcon = findViewById(R.id.iconAdmin);
+            View adminIndicator = findViewById(R.id.indicatorAdmin);
+            adminNavItem = new NavItem(adminFrame, adminIcon, adminIndicator, R.drawable.ic_admin, R.id.navigation_admin);
+            adminNavItem.setVisibility(GONE);
+        }
+
+        // Attach listeners for clicks
+        for (int i = 0; i < navItems.length; i++) {
+            final int position = i;
+            NavItem n = navItems[i];
+            if (n != null && n.container != null) {
+                n.container.setOnClickListener(v -> selectItem(position));
+            }
+        }
+        if (adminNavItem != null && adminNavItem.container != null) {
+            adminNavItem.container.setOnClickListener(v -> selectAdmin());
+        }
+
+        // Select first item by default
+        selectItem(0);
     }
 
     /**
-     * Public API: select a tab by logical index.
-     * Logical indices (when admin hidden): 0..4 -> home,event,chat,committee,profile
-     * When admin visible: 0..5 -> home,event,chat,committee,admin,profile
+     * Programmatically select a tab by position (0..navItems-1). If admin is visible, its position is navItems.length.
      */
-    public void selectTab(int index) {
-        onItemClicked(index);
-    }
-
-    private void onItemClicked(int index) {
-        // ignore invalid index
-        if (index < 0) return;
-
-        // Avoid re-selecting same
-        if (index == selected) return;
-        selected = index;
-
-        resetAll();
-
-        // Haptic feedback via system (no explicit vibrate permission required)
-        performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
-
-        LinearLayout clickedInner = null;
-        ImageView clickedIcon = null;
-        View clickedIndicator = null;
-
-        switch (index) {
-            case 0:
-                clickedInner = navHomeInner; clickedIcon = iconHome; clickedIndicator = indicatorHome; break;
-            case 1:
-                clickedInner = navEventInner; clickedIcon = iconEvent; clickedIndicator = indicatorEvent; break;
-            case 2:
-                clickedInner = navChatInner; clickedIcon = iconChat; clickedIndicator = indicatorChat; break;
-            case 3:
-                clickedInner = navCommitteeInner; clickedIcon = iconCommittee; clickedIndicator = indicatorCommittee; break;
-            case 4:
-                if (adminVisible) { // admin
-                    clickedInner = navAdminInner; clickedIcon = iconAdmin; clickedIndicator = indicatorAdmin; break;
-                } else { // profile in non-admin mode
-                    clickedInner = navProfileInner; clickedIcon = iconProfile; clickedIndicator = indicatorProfile; break;
-                }
-            case 5:
-                // profile when admin visible
-                clickedInner = navProfileInner; clickedIcon = iconProfile; clickedIndicator = indicatorProfile; break;
-            default:
-                // unknown index
-                return;
+    public void selectTab(int position) {
+        if (adminVisible && position == navItems.length) {
+            selectAdmin();
+            return;
         }
-
-        // set selected state
-        if (clickedInner != null) clickedInner.setSelected(true);
-
-        // color tints
-        int active = ContextCompat.getColor(getContext(), R.color.nav_icon_active);
-        if (clickedIcon != null) clickedIcon.setImageTintList(android.content.res.ColorStateList.valueOf(active));
-
-        // start animated drawable if available
-        if (clickedIcon != null) {
-            Drawable d = clickedIcon.getDrawable();
-            if (d instanceof Animatable) {
-                try { ((Animatable) d).start(); } catch (Exception ignored) {}
-            }
-
-            // spring pulse animation for the icon
-            startSpringPulse(clickedIcon);
-        }
-
-        // show indicator with small animation
-        if (clickedIndicator != null) showIndicator(clickedIndicator);
-
-        // announce for accessibility
-        if (getContext() != null && clickedIcon != null) {
-            String announce = clickedIcon.getContentDescription() != null ? clickedIcon.getContentDescription().toString() : "";
-            announceForAccessibility(announce + " selected");
-        }
-
-        // call listener (map internal indices back to logical indices for listener)
-        if (listener != null) {
-            listener.onTabSelected(index);
-        }
+        if (position < 0 || position >= navItems.length) return;
+        selectItem(position);
     }
 
-    private void resetAll() {
-        // reset inner states
-        if (navHomeInner != null) navHomeInner.setSelected(false);
-        if (navEventInner != null) navEventInner.setSelected(false);
-        if (navChatInner != null) navChatInner.setSelected(false);
-        if (navCommitteeInner != null) navCommitteeInner.setSelected(false);
-        if (navAdminInner != null) navAdminInner.setSelected(false);
-        if (navProfileInner != null) navProfileInner.setSelected(false);
-
-        // stop animatable drawables and tint to inactive
-        int inactive = ContextCompat.getColor(getContext(), R.color.nav_icon_inactive);
-        stopAnimAndTint(iconHome, inactive);
-        stopAnimAndTint(iconEvent, inactive);
-        stopAnimAndTint(iconChat, inactive);
-        stopAnimAndTint(iconCommittee, inactive);
-        stopAnimAndTint(iconAdmin, inactive);
-        stopAnimAndTint(iconProfile, inactive);
-
-        // hide indicators
-        hideIndicator(indicatorHome);
-        hideIndicator(indicatorEvent);
-        hideIndicator(indicatorChat);
-        hideIndicator(indicatorCommittee);
-        if (indicatorAdmin != null) hideIndicator(indicatorAdmin);
-        hideIndicator(indicatorProfile);
-    }
-
-    private void stopAnimAndTint(ImageView v, int tint) {
-        if (v == null) return;
-        Drawable d = v.getDrawable();
-        if (d instanceof Animatable) {
-            try { ((Animatable) d).stop(); } catch (Exception ignored) {}
-        }
-        try { v.setImageTintList(android.content.res.ColorStateList.valueOf(tint)); } catch (Exception ignored) {}
-    }
-
-    private void startSpringPulse(View v) {
-        if (v == null) return;
-        SpringAnimation sx = new SpringAnimation(v, SpringAnimation.SCALE_X, 1.06f);
-        SpringAnimation sy = new SpringAnimation(v, SpringAnimation.SCALE_Y, 1.06f);
-        SpringForce sf = new SpringForce(1f);
-        sf.setStiffness(SpringForce.STIFFNESS_LOW);
-        sf.setDampingRatio(SpringForce.DAMPING_RATIO_MEDIUM_BOUNCY);
-        sx.setSpring(sf);
-        sy.setSpring(sf);
-        // set initial velocity to create the 'pop'
-        sx.setStartValue(1.0f);
-        sy.setStartValue(1.0f);
-        sx.animateToFinalPosition(1.06f);
-        sy.animateToFinalPosition(1.06f);
-        // return to 1 using spring
-        sx.addEndListener((animation, canceled, value, velocity) -> {
-            SpringAnimation backX = new SpringAnimation(v, SpringAnimation.SCALE_X, 1f);
-            SpringAnimation backY = new SpringAnimation(v, SpringAnimation.SCALE_Y, 1f);
-            SpringForce backForce = new SpringForce(1f);
-            backForce.setStiffness(SpringForce.STIFFNESS_MEDIUM);
-            backForce.setDampingRatio(SpringForce.DAMPING_RATIO_NO_BOUNCY);
-            backX.setSpring(backForce); backY.setSpring(backForce);
-            backX.animateToFinalPosition(1f); backY.animateToFinalPosition(1f);
-        });
-    }
-
-    private void showIndicator(View v) {
-        if (v == null) return;
-        v.setAlpha(0f);
-        v.setScaleX(0.7f);
-        v.setVisibility(View.VISIBLE);
-        v.animate().alpha(1f).scaleX(1f).setDuration(200).start();
-    }
-
-    private void hideIndicator(View v) {
-        if (v == null) return;
-        v.animate().alpha(0f).scaleX(0.7f).setDuration(140).withEndAction(() -> v.setVisibility(View.GONE)).start();
-    }
-
-    // Public helper to show/hide admin tab depending on user role.
+    /**
+     * Show/hide the Admin tab.
+     */
     public void setAdminVisible(boolean visible) {
-        if (navAdmin == null) return;
         adminVisible = visible;
-        navAdmin.setVisibility(visible ? View.VISIBLE : View.GONE);
-        // If admin tab is shown and we currently have profile selected (index 4), shift to profile index 5
-        if (!visible && selected == 4) {
-            // do nothing special; in non-admin mode index 4 maps to profile
+        if (adminNavItem != null) {
+            adminNavItem.setVisibility(visible ? VISIBLE : GONE);
         }
-        // If admin becomes visible and profile was selected (index 4), remap selection to profile's new index
-        if (visible && selected == 4) {
-            // profile is now index 5, update selected and visuals
-            selected = -1; // force reselect
-            selectTab(5);
+        // If admin is hidden while it was selected, go back to home.
+        if (!visible && currentSelectedPosition < 0) {
+            selectItem(0);
         }
     }
 
-    public boolean isAdminVisible() { return adminVisible; }
+    private void selectAdmin() {
+        if (!adminVisible || adminNavItem == null) return;
+
+        // Deselect previous fixed item (if any)
+        if (currentSelectedPosition >= 0 && currentSelectedPosition < navItems.length) {
+            animateDeselect(navItems[currentSelectedPosition]);
+        }
+
+        // Mark as "admin selected" using a sentinel index
+        currentSelectedPosition = -1;
+        animateSelect(adminNavItem);
+
+        if (listener != null) {
+            listener.onNavigationItemSelected(adminNavItem.id);
+        }
+    }
+
+    private void selectItem(int position) {
+        if (position == currentSelectedPosition) {
+            // If clicking the same item, add a bounce animation
+            animateBounce(navItems[position].iconView);
+            return;
+        }
+
+        // Deselect previous item
+        if (currentSelectedPosition >= 0 && currentSelectedPosition < navItems.length) {
+            animateDeselect(navItems[currentSelectedPosition]);
+        }
+
+        // Select new item
+        currentSelectedPosition = position;
+        animateSelect(navItems[position]);
+
+        // Notify listener
+        if (listener != null) {
+            listener.onNavigationItemSelected(navItems[position].id);
+        }
+    }
+
+    private void animateSelect(NavItem navItem) {
+        if (navItem == null) return;
+        // Show indicator
+        if (navItem.indicator != null) navItem.indicator.setVisibility(View.VISIBLE);
+
+        // Set filled icon if available
+        if (navItem.filledIconResId != 0) {
+            navItem.iconView.setImageResource(navItem.filledIconResId);
+        }
+        // Scale up animation
+        AnimatorSet scaleSet = new AnimatorSet();
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(navItem.iconView, "scaleX", 1.0f, 1.3f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(navItem.iconView, "scaleY", 1.0f, 1.3f);
+        scaleSet.playTogether(scaleX, scaleY);
+        scaleSet.setDuration(ANIMATION_DURATION);
+        scaleSet.setInterpolator(new OvershootInterpolator());
+
+        // Alpha animation
+        ObjectAnimator alpha = ObjectAnimator.ofFloat(navItem.iconView, "alpha", 0.6f, 1.0f);
+        alpha.setDuration(ANIMATION_DURATION);
+
+        // Translation animation (slight bounce up)
+        ObjectAnimator translationY = ObjectAnimator.ofFloat(navItem.iconView, "translationY", 0f, -8f, 0f);
+        translationY.setDuration(ANIMATION_DURATION);
+        translationY.setInterpolator(new OvershootInterpolator());
+
+        // Color change animation (when filled we want colored icon)
+        int colorTo = ContextCompat.getColor(getContext(), R.color.onPrimary);
+        ValueAnimator colorAnimation = ValueAnimator.ofArgb(Color.TRANSPARENT, colorTo);
+        colorAnimation.setDuration(ANIMATION_DURATION);
+        colorAnimation.addUpdateListener(animator -> {
+            try { navItem.iconView.setColorFilter((int) animator.getAnimatedValue()); } catch (Exception ignored){}
+        });
+
+        // Background animation (we rely on indicator + filled icon; optionally tint background)
+        if (navItem.container != null) navItem.container.setBackgroundResource(R.drawable.nav_item_selected_background);
+        ObjectAnimator backgroundAlpha = ObjectAnimator.ofFloat(navItem.container, "alpha", 0.7f, 1.0f);
+        backgroundAlpha.setDuration(ANIMATION_DURATION);
+
+        // Start all animations
+        AnimatorSet finalSet = new AnimatorSet();
+        finalSet.playTogether(scaleSet, alpha, translationY, colorAnimation, backgroundAlpha);
+        finalSet.start();
+    }
+
+    private void animateDeselect(NavItem navItem) {
+        if (navItem == null) return;
+        // Hide indicator
+        if (navItem.indicator != null) navItem.indicator.setVisibility(View.GONE);
+
+        // Restore original icon resource if filled was used
+        if (navItem.iconResId != 0) {
+            navItem.iconView.setImageResource(navItem.iconResId);
+        }
+
+        // Scale down animation
+        AnimatorSet scaleSet = new AnimatorSet();
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(navItem.iconView, "scaleX", 1.3f, 1.0f);
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(navItem.iconView, "scaleY", 1.3f, 1.0f);
+        scaleSet.playTogether(scaleX, scaleY);
+        scaleSet.setDuration(200);
+        scaleSet.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        // Alpha animation
+        ObjectAnimator alpha = ObjectAnimator.ofFloat(navItem.iconView, "alpha", 1.0f, 0.6f);
+        alpha.setDuration(200);
+
+        // Color change animation
+        int colorFrom = ContextCompat.getColor(getContext(), R.color.nav_item_active);
+        int colorTo = ContextCompat.getColor(getContext(), R.color.nav_item_inactive);
+        ValueAnimator colorAnimation = ValueAnimator.ofArgb(colorFrom, colorTo);
+        colorAnimation.setDuration(200);
+        colorAnimation.addUpdateListener(animator -> {
+            try { navItem.iconView.setColorFilter((int) animator.getAnimatedValue()); } catch (Exception ignored){}
+        });
+
+        // Remove background
+        navItem.container.setBackground(null);
+
+        // Start all animations
+        AnimatorSet finalSet = new AnimatorSet();
+        finalSet.playTogether(scaleSet, alpha, colorAnimation);
+        finalSet.start();
+    }
+
+    private void animateBounce(ImageView iconView) {
+        AnimatorSet bounceSet = new AnimatorSet();
+
+        ObjectAnimator bounce1 = ObjectAnimator.ofFloat(iconView, "translationY", 0f, -12f);
+        bounce1.setDuration(150);
+        bounce1.setInterpolator(new AccelerateDecelerateInterpolator());
+
+        ObjectAnimator bounce2 = ObjectAnimator.ofFloat(iconView, "translationY", -12f, 0f);
+        bounce2.setDuration(150);
+        bounce2.setInterpolator(new OvershootInterpolator());
+
+        bounceSet.playSequentially(bounce1, bounce2);
+        bounceSet.start();
+    }
+
+    public void setSelectedItem(int menuItemId) {
+        // Admin selection support
+        if (adminNavItem != null && adminNavItem.id == menuItemId) {
+            setAdminVisible(true);
+            selectAdmin();
+            return;
+        }
+
+        for (int i = 0; i < navItems.length; i++) {
+            if (navItems[i].id == menuItemId) {
+                selectItem(i);
+                break;
+            }
+        }
+    }
+
+    public void setOnNavigationItemSelectedListener(OnNavigationItemSelectedListener listener) {
+        this.listener = listener;
+    }
+
+    public interface OnNavigationItemSelectedListener {
+        void onNavigationItemSelected(int itemId);
+    }
+
+    // Inner class for navigation items (wraps existing layout views)
+    private static class NavItem {
+        FrameLayout container;
+        ImageView iconView;
+        View indicator;
+        int id;
+        int iconResId; // original
+        int filledIconResId; // optional filled variant
+
+        public NavItem(FrameLayout container, ImageView iconView, View indicator, int iconResId, int id) {
+            this.container = container;
+            this.iconView = iconView;
+            this.indicator = indicator;
+            this.id = id;
+            this.iconResId = iconResId;
+
+            // ensure base icon is set
+            try { this.iconView.setImageResource(iconResId); } catch (Exception ignored) {}
+
+            // find filled variant if present (resource name + _filled)
+            try {
+                Context ctx = iconView.getContext();
+                String entryName = ctx.getResources().getResourceEntryName(iconResId);
+                int filledId = ctx.getResources().getIdentifier(entryName + "_filled", "drawable", ctx.getPackageName());
+                if (filledId != 0) filledIconResId = filledId; else filledIconResId = 0;
+            } catch (Exception ignored) { filledIconResId = 0; }
+
+            // set initial tint/alpha
+            try {
+                iconView.setColorFilter(ContextCompat.getColor(iconView.getContext(), R.color.nav_item_inactive));
+                iconView.setAlpha(0.6f);
+            } catch (Exception ignored) {}
+
+            // clickable ripple is on container (defined in layout as foreground)
+        }
+
+        public void setVisibility(int v) {
+            if (container != null) container.setVisibility(v);
+        }
+    }
 }

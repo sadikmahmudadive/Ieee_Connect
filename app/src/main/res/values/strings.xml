@@ -50,4 +50,12 @@
     <string name="error_password_required">Password is required</string>
     <string name="signing_in">Signing in...</string>
     <string name="log_in">Log In</string>
+
+    <!-- Custom bottom nav content descriptions (kept for backward compatibility) -->
+    <string name="home">Home</string>
+    <string name="events">Events</string>
+    <string name="chat">Chat</string>
+    <string name="committee">Committee</string>
+    <string name="profile">Profile</string>
+
 </resources>

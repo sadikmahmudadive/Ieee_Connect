@@ -17,4 +17,15 @@
     <color name="nav_icon_inactive">#94A3B8</color>
     <color name="bottom_nav_ripple_color">#228B9CFF</color>
     <color name="ieee_primary">#3D4FFC</color>
+
+    <!-- Additional colors for EditEventActivity (Night mode) -->
+    <color name="background_primary">#0F1724</color>
+    <color name="text_primary">#E6EEF8</color>
+    <color name="surface_primary">#0B1220</color>
+
+    <!-- Custom Bottom Navigation Colors (Night mode) -->
+    <color name="nav_background">#1A2332</color>
+    <color name="nav_item_active">#8B9CFF</color>
+    <color name="nav_item_inactive">#64748B</color>
+    <color name="nav_item_selected_bg">#2D3B52</color>
 </resources>

@@ -109,6 +109,30 @@
                 android:layout_marginTop="16dp"
                 android:text="Add to Calendar" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/editEventButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Edit Event"
+                android:textColor="@android:color/white"
+                android:visibility="gone"
+                app:backgroundTint="@color/primary"
+                app:icon="@drawable/ic_edit"
+                app:iconGravity="textStart" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/deleteEventButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Delete Event"
+                android:textColor="@android:color/white"
+                android:visibility="gone"
+                app:backgroundTint="@android:color/holo_red_dark"
+                app:icon="@drawable/ic_delete"
+                app:iconGravity="textStart" />
+
             <!-- TODO: Add map snippet here -->
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

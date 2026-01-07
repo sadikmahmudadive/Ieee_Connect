@@ -129,6 +129,21 @@ public class HomeFragment extends Fragment {
         checkAdminAndShowFab();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Auto-reload events when fragment is resumed
+        if (viewModel != null) {
+            viewModel.refreshFromNetwork();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
+
     private void checkAdminAndShowFab() {
         // check if current user is in 'committee' collection or has an admin role
         if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
@@ -136,22 +151,28 @@ public class HomeFragment extends Fragment {
 
         firestore.collection("committee").document(uid).get()
                 .addOnSuccessListener(doc -> {
+                    if (binding == null) return; // Check if binding is still valid
                     if (doc != null && doc.exists()) {
                         binding.fabAdd.setVisibility(View.VISIBLE);
                     } else {
                         // fallback: check roles collection
                         firestore.collection("roles").document(uid).get()
                                 .addOnSuccessListener(rdoc -> {
+                                    if (binding == null) return; // Check if binding is still valid
                                     if (rdoc != null && rdoc.exists() && Boolean.TRUE.equals(rdoc.getBoolean("isAdmin"))) {
                                         binding.fabAdd.setVisibility(View.VISIBLE);
                                     } else {
                                         binding.fabAdd.setVisibility(View.GONE);
                                     }
                                 })
-                                .addOnFailureListener(e -> binding.fabAdd.setVisibility(View.GONE));
+                                .addOnFailureListener(e -> {
+                                    if (binding != null) binding.fabAdd.setVisibility(View.GONE);
+                                });
                     }
                 })
-                .addOnFailureListener(e -> binding.fabAdd.setVisibility(View.GONE));
+                .addOnFailureListener(e -> {
+                    if (binding != null) binding.fabAdd.setVisibility(View.GONE);
+                });
     }
 
     private boolean isNetworkAvailable() {

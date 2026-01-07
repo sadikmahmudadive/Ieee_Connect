@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Replaced malformed file with a state list drawable used by custom bottom nav items.
+     When item is selected (state_checked) it shows nav_item_checked, otherwise nav_item_unchecked.
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true" android:drawable="@drawable/nav_item_checked" />
+    <item android:drawable="@drawable/nav_item_unchecked" />
+</selector>

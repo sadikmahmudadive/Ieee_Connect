@@ -12,6 +12,8 @@ public class Event {
     private String creatorId;
     private List<String> rsvpGoing;
     private List<String> rsvpInterested;
+    private String location;
+    private long createdAt;
 
     public Event() {}
 
@@ -44,5 +46,8 @@ public class Event {
     public void setRsvpGoing(List<String> rsvpGoing) { this.rsvpGoing = rsvpGoing; }
     public List<String> getRsvpInterested() { return rsvpInterested; }
     public void setRsvpInterested(List<String> rsvpInterested) { this.rsvpInterested = rsvpInterested; }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
+    public long getCreatedAt() { return createdAt; }
+    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
 }
-

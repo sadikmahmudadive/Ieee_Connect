@@ -9,8 +9,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.ieeeconnect.databinding.ActivityDashboardBinding;
 import com.example.ieeeconnect.ui.admin.AdminDashboardFragment;
-import com.example.ieeeconnect.ui.chat.ChatFragment;
-import com.example.ieeeconnect.ui.committee.CommitteeFragment;
 import com.example.ieeeconnect.ui.events.EventsFragment;
 import com.example.ieeeconnect.ui.home.HomeFragment;
 import com.example.ieeeconnect.ui.profile.ProfileFragment;
@@ -19,6 +17,8 @@ import com.example.ieeeconnect.ui.views.CustomBottomNavView;
 public class DashboardActivity extends AppCompatActivity {
 
     private ActivityDashboardBinding binding;
+    private boolean isAdmin = false;
+    private String role = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,72 +30,45 @@ public class DashboardActivity extends AppCompatActivity {
         CustomBottomNavView navView = binding.customBottomNavView;
 
         // Determine admin role from intent extras
-        boolean isAdmin = getIntent() != null && getIntent().getBooleanExtra("isAdmin", false);
-        String role = getIntent() != null ? getIntent().getStringExtra("role") : null;
+        isAdmin = getIntent() != null && getIntent().getBooleanExtra("isAdmin", false);
+        role = getIntent() != null ? getIntent().getStringExtra("role") : null;
         boolean isAdminRole = role != null && ("ADMIN".equalsIgnoreCase(role) || "SUPER_ADMIN".equalsIgnoreCase(role));
 
-        // Show admin tab only for admin users
-        navView.setAdminVisible(isAdmin || isAdminRole);
+        // if user is admin, show admin tab
+        if (isAdmin || isAdminRole) {
+            navView.setAdminVisible(true);
+        }
 
-        navView.setOnTabSelectedListener(index -> {
-            // When admin tab is visible the indices are 0..5 (admin at 4, profile at 5)
-            switch (index) {
-                case 0:
+        navView.setOnNavigationItemSelectedListener(itemId -> {
+            if (itemId == R.id.navigation_home) {
+                switchFragment(new HomeFragment());
+            } else if (itemId == R.id.navigation_events) {
+                switchFragment(new EventsFragment());
+            } else if (itemId == R.id.navigation_chat) {
+                // Chat fragment may be implemented elsewhere; for now stay on Home if missing
+                try {
+                    Class<?> cls = Class.forName("com.example.ieeeconnect.ui.chat.ChatFragment");
+                    Fragment f = (Fragment) cls.newInstance();
+                    switchFragment(f);
+                } catch (Exception e) {
                     switchFragment(new HomeFragment());
-                    break;
-                case 1:
-                    switchFragment(new EventsFragment());
-                    break;
-                case 2:
-                    switchFragment(new ChatFragment());
-                    break;
-                case 3:
-                    switchFragment(new CommitteeFragment());
-                    break;
-                case 4:
-                    // If admin tab visible, index 4 = AdminDashboardFragment
-                    if (navView.isAdminVisible()) {
-                        AdminDashboardFragment adminFragment = new AdminDashboardFragment();
-                        Bundle args = new Bundle();
-                        args.putBoolean("isAdmin", true);
-                        if (role != null) args.putString("role", role);
-                        adminFragment.setArguments(args);
-                        switchFragment(adminFragment);
-                    } else {
-                        // fallback to profile
-                        switchFragment(new ProfileFragment());
-                    }
-                    break;
-                case 5:
-                    // profile when admin visible
-                    switchFragment(new ProfileFragment());
-                    break;
+                }
+            } else if (itemId == R.id.navigation_profile) {
+                switchFragment(new ProfileFragment());
+            } else if (itemId == R.id.navigation_admin) {
+                switchFragment(new AdminDashboardFragment());
             }
         });
 
-        // Default selection -> Home (also update nav visual state)
-        navView.selectTab(0);
-
-        // If launched with admin intent extras, navigate to AdminDashboardFragment directly
-        if (isAdmin || isAdminRole) {
-            AdminDashboardFragment fragment = new AdminDashboardFragment();
-            Bundle args = new Bundle();
-            args.putBoolean("isAdmin", true);
-            if (role != null) args.putString("role", role);
-            fragment.setArguments(args);
-            switchFragment(fragment);
-            // mark admin tab selected visually
-            navView.selectTab(4);
+        // Default selection -> Home
+        if (savedInstanceState == null) {
+            switchFragment(new HomeFragment());
         }
     }
 
     private void switchFragment(Fragment fragment) {
         FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
         tx.replace(R.id.fragment_container, fragment);
-        // Add to back stack only for AdminDashboardFragment
-        if (fragment instanceof AdminDashboardFragment) {
-            tx.addToBackStack(null);
-        }
         tx.commit();
     }
 
@@ -104,7 +77,7 @@ public class DashboardActivity extends AppCompatActivity {
         binding.customBottomNavView.setAdminVisible(false);
         // If currently showing AdminDashboardFragment, switch to HomeFragment
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        if (current instanceof com.example.ieeeconnect.ui.admin.AdminDashboardFragment) {
+        if (current instanceof AdminDashboardFragment) {
             switchFragment(new HomeFragment());
             binding.customBottomNavView.selectTab(0);
         }

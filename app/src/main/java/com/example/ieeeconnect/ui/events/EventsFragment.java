@@ -52,4 +52,19 @@ public class EventsFragment extends Fragment {
             startActivity(new Intent(getActivity(), CreateEventActivity.class));
         });
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Auto-reload events when fragment is resumed
+        if (viewModel != null) {
+            viewModel.refreshFromNetwork();
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
 }

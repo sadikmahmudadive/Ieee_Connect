@@ -33,6 +33,11 @@ public class Event {
     private String locationName;
     private long startTime;
     private long endTime;
+    @Nullable
+    private String id; // Firestore document id
+    @Nullable
+    private String location; // Firestore location field
+    private long createdAt; // Firestore createdAt timestamp
 
     public Event() {
         // Default constructor required for calls to DataSnapshot.getValue(Event.class)
@@ -40,7 +45,8 @@ public class Event {
 
     public Event(@NonNull String eventId, @NonNull String title, @NonNull String description, long eventTime,
                  @Nullable String bannerUrl, @Nullable String createdByUserId, @NonNull List<String> goingUserIds,
-                 @NonNull List<String> interestedUserIds, @Nullable String locationName, long startTime, long endTime) {
+                 @NonNull List<String> interestedUserIds, @Nullable String locationName, long startTime, long endTime,
+                 @Nullable String id, @Nullable String location, long createdAt) {
         this.eventId = eventId;
         this.title = title;
         this.description = description;
@@ -52,6 +58,9 @@ public class Event {
         this.locationName = locationName;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.id = id;
+        this.location = location;
+        this.createdAt = createdAt;
     }
 
     @NonNull
@@ -93,6 +102,15 @@ public class Event {
     public long getEndTime() { return endTime; }
     public void setEndTime(long endTime) { this.endTime = endTime; }
 
+    @Nullable
+    public String getId() { return id; }
+    public void setId(@Nullable String id) { this.id = id; }
+    @Nullable
+    public String getLocation() { return location; }
+    public void setLocation(@Nullable String location) { this.location = location; }
+    public long getCreatedAt() { return createdAt; }
+    public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -108,6 +126,9 @@ public class Event {
                 ((createdByUserId == null && event.createdByUserId == null) || (createdByUserId != null && createdByUserId.equals(event.createdByUserId))) &&
                 ((locationName == null && event.locationName == null) || (locationName != null && locationName.equals(event.locationName))) &&
                 goingUserIds.equals(event.goingUserIds) &&
-                interestedUserIds.equals(event.interestedUserIds);
+                interestedUserIds.equals(event.interestedUserIds) &&
+                ((id == null && event.id == null) || (id != null && id.equals(event.id))) &&
+                ((location == null && event.location == null) || (location != null && location.equals(event.location))) &&
+                createdAt == event.createdAt;
     }
 }

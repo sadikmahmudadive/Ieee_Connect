@@ -1,243 +1,242 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/customBottomNavBar"
+<!-- Custom bottom navigation layout: 6 slots (admin may be hidden at runtime).
+     Logical order left->right: Home, Events, Chat, Committee, (Admin), Profile
+     Each slot exposes IDs expected by CustomBottomNavView:
+       navHome, navEvent, navChat, navCommittee, navAdmin, navProfile
+       navHomeInner, navEventInner, navChatInner, navCommitteeInner, navAdminInner, navProfileInner
+       iconHome, iconEvent, iconChat, iconCommittee, iconAdmin, iconProfile
+       indicatorHome, indicatorEvent, indicatorChat, indicatorCommittee, indicatorAdmin, indicatorProfile
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
-    android:background="@drawable/bottom_nav_background"
-    android:orientation="vertical"
-    android:padding="8dp">
+    android:layout_height="72dp"
+    android:paddingStart="12dp"
+    android:paddingEnd="12dp"
+    android:background="@drawable/custom_bottom_nav_background"
+    android:clipToPadding="false">
 
     <LinearLayout
-        android:id="@+id/navIcons"
+        android:id="@+id/navContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
         android:gravity="center"
-        android:baselineAligned="false">
+        android:weightSum="6">
 
+        <!-- Home -->
         <FrameLayout
             android:id="@+id/navHome"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center">
+            android:foreground="@drawable/bottom_nav_ripple"
+            android:clickable="true"
+            android:focusable="true">
 
             <LinearLayout
                 android:id="@+id/navHomeInner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:gravity="center"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                android:duplicateParentState="true"
-                android:background="@drawable/nav_item_selector">
+                android:layout_gravity="center">
 
                 <ImageView
                     android:id="@+id/iconHome"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_home_animated"
-                    android:contentDescription="Home"
-                    android:duplicateParentState="true" />
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_home"
+                    app:tint="@color/nav_icon_inactive"
+                    android:contentDescription="@string/nav_home"/>
 
+                <View
+                    android:id="@+id/indicatorHome"
+                    android:layout_width="24dp"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/nav_indicator"
+                    android:visibility="gone"/>
             </LinearLayout>
-
-            <View
-                android:id="@+id/indicatorHome"
-                android:layout_width="36dp"
-                android:layout_height="4dp"
-                android:layout_gravity="bottom|center_horizontal"
-                android:background="@drawable/nav_indicator"
-                android:visibility="gone"/>
         </FrameLayout>
 
+        <!-- Events -->
         <FrameLayout
             android:id="@+id/navEvent"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center">
+            android:foreground="@drawable/bottom_nav_ripple"
+            android:clickable="true"
+            android:focusable="true">
 
             <LinearLayout
                 android:id="@+id/navEventInner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                android:duplicateParentState="true"
-                android:background="@drawable/nav_item_selector">
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/iconEvent"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_event_animated"
-                    android:contentDescription="Event"
-                    android:duplicateParentState="true" />
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_events"
+                    app:tint="@color/nav_icon_inactive"
+                    android:contentDescription="@string/nav_events"/>
 
+                <View
+                    android:id="@+id/indicatorEvent"
+                    android:layout_width="24dp"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/nav_indicator"
+                    android:visibility="gone"/>
             </LinearLayout>
-
-            <View
-                android:id="@+id/indicatorEvent"
-                android:layout_width="36dp"
-                android:layout_height="4dp"
-                android:layout_gravity="bottom|center_horizontal"
-                android:background="@drawable/nav_indicator"
-                android:visibility="gone"/>
         </FrameLayout>
 
+        <!-- Chat -->
         <FrameLayout
             android:id="@+id/navChat"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center">
+            android:foreground="@drawable/bottom_nav_ripple"
+            android:clickable="true"
+            android:focusable="true">
 
             <LinearLayout
                 android:id="@+id/navChatInner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                android:duplicateParentState="true"
-                android:background="@drawable/nav_item_selector">
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/iconChat"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_chat_animated"
-                    android:contentDescription="Chat"
-                    android:duplicateParentState="true" />
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_chat"
+                    app:tint="@color/nav_icon_inactive"
+                    android:contentDescription="@string/nav_chat"/>
 
+                <View
+                    android:id="@+id/indicatorChat"
+                    android:layout_width="24dp"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/nav_indicator"
+                    android:visibility="gone"/>
             </LinearLayout>
-
-            <View
-                android:id="@+id/indicatorChat"
-                android:layout_width="36dp"
-                android:layout_height="4dp"
-                android:layout_gravity="bottom|center_horizontal"
-                android:background="@drawable/nav_indicator"
-                android:visibility="gone"/>
         </FrameLayout>
 
+        <!-- Committee -->
         <FrameLayout
             android:id="@+id/navCommittee"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center">
+            android:foreground="@drawable/bottom_nav_ripple"
+            android:clickable="true"
+            android:focusable="true">
 
             <LinearLayout
                 android:id="@+id/navCommitteeInner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                android:duplicateParentState="true"
-                android:background="@drawable/nav_item_selector">
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/iconCommittee"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_committee_animated"
-                    android:contentDescription="Committee"
-                    android:duplicateParentState="true" />
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_committee"
+                    app:tint="@color/nav_icon_inactive"
+                    android:contentDescription="@string/nav_committee"/>
 
+                <View
+                    android:id="@+id/indicatorCommittee"
+                    android:layout_width="24dp"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/nav_indicator"
+                    android:visibility="gone"/>
             </LinearLayout>
-
-            <View
-                android:id="@+id/indicatorCommittee"
-                android:layout_width="36dp"
-                android:layout_height="4dp"
-                android:layout_gravity="bottom|center_horizontal"
-                android:background="@drawable/nav_indicator"
-                android:visibility="gone"/>
         </FrameLayout>
 
-        <!-- Admin tab (hidden by default) -->
+        <!-- Admin (may be hidden by code) -->
         <FrameLayout
             android:id="@+id/navAdmin"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center"
+            android:foreground="@drawable/bottom_nav_ripple"
+            android:clickable="true"
+            android:focusable="true"
             android:visibility="gone">
 
             <LinearLayout
                 android:id="@+id/navAdminInner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                android:duplicateParentState="true"
-                android:background="@drawable/nav_item_selector">
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/iconAdmin"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:src="@drawable/ic_admin"
-                    android:contentDescription="Admin"
-                    android:duplicateParentState="true" />
+                    app:tint="@color/nav_icon_inactive"
+                    android:contentDescription="@string/nav_admin"/>
 
+                <View
+                    android:id="@+id/indicatorAdmin"
+                    android:layout_width="24dp"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/nav_indicator"
+                    android:visibility="gone"/>
             </LinearLayout>
-
-            <View
-                android:id="@+id/indicatorAdmin"
-                android:layout_width="36dp"
-                android:layout_height="4dp"
-                android:layout_gravity="bottom|center_horizontal"
-                android:background="@drawable/nav_indicator"
-                android:visibility="gone"/>
         </FrameLayout>
 
+        <!-- Profile -->
         <FrameLayout
             android:id="@+id/navProfile"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:gravity="center">
+            android:foreground="@drawable/bottom_nav_ripple"
+            android:clickable="true"
+            android:focusable="true">
 
             <LinearLayout
                 android:id="@+id/navProfileInner"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:paddingLeft="4dp"
-                android:paddingRight="4dp"
-                android:duplicateParentState="true"
-                android:background="@drawable/nav_item_selector">
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/iconProfile"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_profile_animated"
-                    android:contentDescription="Profile"
-                    android:duplicateParentState="true" />
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_profile"
+                    app:tint="@color/nav_icon_inactive"
+                    android:contentDescription="@string/nav_profile"/>
 
+                <View
+                    android:id="@+id/indicatorProfile"
+                    android:layout_width="24dp"
+                    android:layout_height="4dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/nav_indicator"
+                    android:visibility="gone"/>
             </LinearLayout>
-
-            <View
-                android:id="@+id/indicatorProfile"
-                android:layout_width="36dp"
-                android:layout_height="4dp"
-                android:layout_gravity="bottom|center_horizontal"
-                android:background="@drawable/nav_indicator"
-                android:visibility="gone"/>
         </FrameLayout>
+
     </LinearLayout>
-</LinearLayout>
+
+</FrameLayout>

@@ -81,4 +81,3 @@ public class EventRepository {
                 .addOnFailureListener(onFailure);
     }
 }
-

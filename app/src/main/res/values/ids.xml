@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- IDs for CustomBottomNavView navigation callbacks -->
+    <item name="navigation_home" type="id" />
+    <item name="navigation_calendar" type="id" />
+    <item name="navigation_events" type="id" />
+    <item name="navigation_chat" type="id" />
+    <item name="navigation_committee" type="id" />
+    <item name="navigation_profile" type="id" />
+    <item name="navigation_admin" type="id" />
+</resources>

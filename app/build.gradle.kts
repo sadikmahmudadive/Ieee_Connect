@@ -50,6 +50,7 @@ kapt {
     }
 }
 
+
 dependencies {
     // Core Android UI
     implementation(libs.appcompat)
@@ -86,15 +87,14 @@ dependencies {
 
     // Glide
     implementation(libs.glide)
-    kapt(libs.glide.compiler)
-    // annotationProcessor(libs.glide.compiler) // Use kapt for Kotlin
+    kapt(libs.glide.compiler) // Use kapt for annotation processing
 
     // Room
     implementation(libs.room.runtime)
-    kapt(libs.room.compiler)
+    kapt(libs.room.compiler) // Use kapt for annotation processing
 
     // sqlite-jdbc for kapt (Room verifier on Windows)
-    kapt(libs.sqlite.jdbc)
+    implementation(libs.sqlite.jdbc)
 
     // Animations & polish
     implementation(libs.lottie)
