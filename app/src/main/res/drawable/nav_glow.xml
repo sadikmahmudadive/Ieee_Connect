@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
     <size android:width="40dp" android:height="40dp" />
-    <!-- radial glow for selected nav item -->
+    <!-- radial glow for selected nav item using nav_item_active color with alpha gradient -->
     <gradient
         android:type="radial"
         android:gradientRadius="20dp"
-        android:startColor="#40FF6A00"
-        android:centerColor="#26FF6A00"
-        android:endColor="#00FF6A00"
+        android:startColor="#40386BF6"
+        android:centerColor="#20386BF6"
+        android:endColor="#00386BF6"
         android:useLevel="false" />
 </shape>
-

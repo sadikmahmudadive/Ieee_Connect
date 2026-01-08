@@ -40,7 +40,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:foregroundGravity="center"
-                android:layout_gravity="center">
+                android:gravity="center">
 
                 <!-- Glow behind the icon (hidden by default) -->
                 <ImageView
@@ -57,13 +57,14 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
+                    android:scaleType="centerInside"
                     android:src="@drawable/ic_home"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_home"/>
 
                 <View
                     android:id="@+id/indicatorHome"
-                    android:layout_width="24dp"
+                    android:layout_width="40dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
                     android:layout_gravity="bottom|center_horizontal"
@@ -86,7 +87,8 @@
                 android:id="@+id/navEventInner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:foregroundGravity="center">
+                android:foregroundGravity="center"
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/glowEvent"
@@ -102,13 +104,14 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
+                    android:scaleType="centerInside"
                     android:src="@drawable/ic_events"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_events"/>
 
                 <View
                     android:id="@+id/indicatorEvent"
-                    android:layout_width="24dp"
+                    android:layout_width="40dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
                     android:layout_gravity="bottom|center_horizontal"
@@ -131,7 +134,8 @@
                 android:id="@+id/navChatInner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:foregroundGravity="center">
+                android:foregroundGravity="center"
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/glowChat"
@@ -147,13 +151,14 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
+                    android:scaleType="centerInside"
                     android:src="@drawable/ic_chat"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_chat"/>
 
                 <View
                     android:id="@+id/indicatorChat"
-                    android:layout_width="24dp"
+                    android:layout_width="40dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
                     android:layout_gravity="bottom|center_horizontal"
@@ -176,7 +181,8 @@
                 android:id="@+id/navCommitteeInner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:foregroundGravity="center">
+                android:foregroundGravity="center"
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/glowCommittee"
@@ -192,13 +198,14 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
+                    android:scaleType="centerInside"
                     android:src="@drawable/ic_committee"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_committee"/>
 
                 <View
                     android:id="@+id/indicatorCommittee"
-                    android:layout_width="24dp"
+                    android:layout_width="40dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
                     android:layout_gravity="bottom|center_horizontal"
@@ -222,7 +229,8 @@
                 android:id="@+id/navAdminInner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:foregroundGravity="center">
+                android:foregroundGravity="center"
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/glowAdmin"
@@ -238,13 +246,14 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
+                    android:scaleType="centerInside"
                     android:src="@drawable/ic_admin"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_admin"/>
 
                 <View
                     android:id="@+id/indicatorAdmin"
-                    android:layout_width="24dp"
+                    android:layout_width="40dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
                     android:layout_gravity="bottom|center_horizontal"
@@ -267,7 +276,8 @@
                 android:id="@+id/navProfileInner"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:foregroundGravity="center">
+                android:foregroundGravity="center"
+                android:gravity="center">
 
                 <ImageView
                     android:id="@+id/glowProfile"
@@ -283,13 +293,14 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_gravity="center"
+                    android:scaleType="centerInside"
                     android:src="@drawable/ic_profile"
                     app:tint="@color/nav_icon_inactive"
                     android:contentDescription="@string/nav_profile"/>
 
                 <View
                     android:id="@+id/indicatorProfile"
-                    android:layout_width="24dp"
+                    android:layout_width="40dp"
                     android:layout_height="4dp"
                     android:layout_marginTop="6dp"
                     android:layout_gravity="bottom|center_horizontal"

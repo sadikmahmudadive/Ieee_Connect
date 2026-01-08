@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -31,6 +32,8 @@ import java.util.TimeZone;
 
 public class EventDetailActivity extends AppCompatActivity {
     public static final String EXTRA_EVENT = "event";
+
+    private static final String TAG = "EventDetailActivity";
 
     private ImageView bannerImage;
     private TextView titleText;
@@ -78,14 +81,45 @@ public class EventDetailActivity extends AppCompatActivity {
         editEventButton = findViewById(R.id.editEventButton);
         collapsingToolbar = findViewById(R.id.collapsingToolbar);
 
-        // Get event ID from intent and fetch event details from Firestore
-        eventId = getIntent().getStringExtra(EXTRA_EVENT);
-        if (eventId == null) {
-            finish();
-            return;
+        // Robustly extract event identifier or object from intent
+        Intent intent = getIntent();
+        if (intent != null) {
+            // Primary: EXTRA_EVENT (legacy in this codebase uses key "event")
+            String id = intent.getStringExtra(EXTRA_EVENT);
+            if (id == null) {
+                // Secondary: many places use key "eventId"
+                id = intent.getStringExtra("eventId");
+            }
+
+            if (id != null) {
+                eventId = id;
+            } else {
+                // Third: some older code may pass a full Event object (serialized)
+                try {
+                    Object obj = intent.getSerializableExtra("event");
+                    if (obj instanceof Event) {
+                        currentEvent = (Event) obj;
+                        // ensure eventId is set from object if present
+                        if (currentEvent.getEventId() != null && !currentEvent.getEventId().isEmpty()) {
+                            eventId = currentEvent.getEventId();
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.d(TAG, "No serializable event found in intent", e);
+                }
+            }
         }
 
-        loadEventDetails();
+        // If we have an Event object already, show it immediately; otherwise fetch from Firestore using eventId
+        if (currentEvent != null) {
+            displayEventDetails();
+        } else if (eventId != null) {
+            loadEventDetails();
+        } else {
+            // Still no identifier found - show a helpful message and finish
+            Toast.makeText(this, "Event identifier missing", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
 
     @Override
@@ -99,15 +133,22 @@ public class EventDetailActivity extends AppCompatActivity {
 
     private void loadEventDetails() {
         // Show loading state
-        collapsingToolbar.setTitle("Loading...");
+        if (collapsingToolbar != null) collapsingToolbar.setTitle("Loading...");
+
+        if (eventId == null) {
+            Toast.makeText(this, "Invalid event id", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         // Fetch event from Firestore
         FirebaseFirestore.getInstance().collection("events").document(eventId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        currentEvent = documentSnapshot.toObject(Event.class);
-                        if (currentEvent != null) {
+                        Event fetched = documentSnapshot.toObject(Event.class);
+                        if (fetched != null) {
+                            currentEvent = fetched;
                             currentEvent.setEventId(documentSnapshot.getId());
                             displayEventDetails();
                         } else {
@@ -126,12 +167,15 @@ public class EventDetailActivity extends AppCompatActivity {
     }
 
     private void displayEventDetails() {
-        titleText.setText(currentEvent.getTitle());
-        descriptionText.setText(currentEvent.getDescription());
+        if (currentEvent == null) return;
+
+        titleText.setText(currentEvent.getTitle() != null ? currentEvent.getTitle() : "Untitled Event");
+        descriptionText.setText(currentEvent.getDescription() != null ? currentEvent.getDescription() : "");
         timeText.setText(formatEventTime(currentEvent.getStartTime(), currentEvent.getEndTime()));
 
         // Display location if available, otherwise hide the TextView
-        String location = currentEvent.getLocationName();
+        String location = null;
+        try { location = currentEvent.getLocationName(); } catch (Exception ignored) {}
         if (location != null && !location.trim().isEmpty()) {
             locationText.setText(location);
             locationText.setVisibility(View.VISIBLE);
@@ -139,12 +183,12 @@ public class EventDetailActivity extends AppCompatActivity {
             locationText.setVisibility(View.GONE);
         }
 
-        collapsingToolbar.setTitle(currentEvent.getTitle());
+        if (collapsingToolbar != null) collapsingToolbar.setTitle(currentEvent.getTitle());
         Glide.with(this).load(currentEvent.getBannerUrl()).into(bannerImage);
 
         addToCalendarButton.setOnClickListener(v -> {
             if (currentEvent == null) return;
-            Intent intent = new Intent(Intent.ACTION_INSERT)
+            Intent cal = new Intent(Intent.ACTION_INSERT)
                     .setData(CalendarContract.Events.CONTENT_URI)
                     .putExtra(CalendarContract.Events.TITLE, currentEvent.getTitle())
                     .putExtra(CalendarContract.Events.DESCRIPTION, currentEvent.getDescription())
@@ -152,7 +196,7 @@ public class EventDetailActivity extends AppCompatActivity {
                     .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, currentEvent.getStartTime())
                     .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, currentEvent.getEndTime())
                     .putExtra(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().getID());
-            startActivity(intent);
+            startActivity(cal);
         });
 
         // Check if user is admin and show delete button
@@ -164,8 +208,8 @@ public class EventDetailActivity extends AppCompatActivity {
 
     private void checkAdminStatusAndShowDeleteButton() {
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            deleteEventButton.setVisibility(View.GONE);
-            editEventButton.setVisibility(View.GONE);
+            if (deleteEventButton != null) deleteEventButton.setVisibility(View.GONE);
+            if (editEventButton != null) editEventButton.setVisibility(View.GONE);
             return;
         }
 
@@ -187,22 +231,22 @@ public class EventDetailActivity extends AppCompatActivity {
                     }
 
                     // Show delete and edit buttons for admins or event creators
-                    boolean isEventCreator = currentEvent.getCreatedByUserId() != null
+                    boolean isEventCreator = currentEvent != null && currentEvent.getCreatedByUserId() != null
                             && currentEvent.getCreatedByUserId().equals(uid);
                     boolean isPrivileged = isAdmin || "SUPER_ADMIN".equalsIgnoreCase(role)
                             || "ADMIN".equalsIgnoreCase(role) || "EXCOM".equalsIgnoreCase(role);
 
                     if (isPrivileged || isEventCreator) {
-                        deleteEventButton.setVisibility(View.VISIBLE);
-                        editEventButton.setVisibility(View.VISIBLE);
+                        if (deleteEventButton != null) deleteEventButton.setVisibility(View.VISIBLE);
+                        if (editEventButton != null) editEventButton.setVisibility(View.VISIBLE);
                     } else {
-                        deleteEventButton.setVisibility(View.GONE);
-                        editEventButton.setVisibility(View.GONE);
+                        if (deleteEventButton != null) deleteEventButton.setVisibility(View.GONE);
+                        if (editEventButton != null) editEventButton.setVisibility(View.GONE);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    deleteEventButton.setVisibility(View.GONE);
-                    editEventButton.setVisibility(View.GONE);
+                    if (deleteEventButton != null) deleteEventButton.setVisibility(View.GONE);
+                    if (editEventButton != null) editEventButton.setVisibility(View.GONE);
                 });
     }
 

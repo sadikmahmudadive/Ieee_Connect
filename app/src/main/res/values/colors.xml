@@ -22,7 +22,7 @@
     <color name="onSurfaceVariant">#2B2E4A</color>
 
     <!-- Navigation icon colors tuned for light background -->
-    <color name="nav_icon_active">#4F46E5</color>
+    <color name="nav_icon_active">#386BF6</color>
     <color name="nav_icon_inactive">#94A3B8</color>
 
     <!-- ripple color for bottom nav touch feedback -->
@@ -37,7 +37,7 @@
 
     <!-- Custom Bottom Navigation Colors -->
     <color name="nav_background">#FFFFFF</color>
-    <color name="nav_item_active">#4F46E5</color>
+    <color name="nav_item_active">#386BF6</color>
     <color name="nav_item_inactive">#94A3B8</color>
     <color name="nav_item_selected_bg">#E8E6FF</color>
     <color name="primary_variant">#1976D2</color>

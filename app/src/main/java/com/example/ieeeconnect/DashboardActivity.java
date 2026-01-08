@@ -1,6 +1,7 @@
 package com.example.ieeeconnect;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,8 +14,12 @@ import com.example.ieeeconnect.ui.events.EventsFragment;
 import com.example.ieeeconnect.ui.home.HomeFragment;
 import com.example.ieeeconnect.ui.profile.ProfileFragment;
 import com.example.ieeeconnect.ui.views.CustomBottomNavView;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class DashboardActivity extends AppCompatActivity {
+
+    private static final String TAG = "DashboardActivity";
 
     private ActivityDashboardBinding binding;
     private boolean isAdmin = false;
@@ -29,14 +34,49 @@ public class DashboardActivity extends AppCompatActivity {
 
         CustomBottomNavView navView = binding.customBottomNavView;
 
-        // Determine admin role from intent extras
-        isAdmin = getIntent() != null && getIntent().getBooleanExtra("isAdmin", false);
-        role = getIntent() != null ? getIntent().getStringExtra("role") : null;
-        boolean isAdminRole = role != null && ("ADMIN".equalsIgnoreCase(role) || "SUPER_ADMIN".equalsIgnoreCase(role));
+        // Default: hide admin tab until we determine the user's privileges
+        navView.setAdminVisible(false);
 
-        // if user is admin, show admin tab
-        if (isAdmin || isAdminRole) {
-            navView.setAdminVisible(true);
+        // First try: intent extras (backward-compatibility)
+        if (getIntent() != null) {
+            isAdmin = getIntent().getBooleanExtra("isAdmin", false);
+            role = getIntent().getStringExtra("role");
+            boolean isAdminRole = role != null && ("ADMIN".equalsIgnoreCase(role) || "SUPER_ADMIN".equalsIgnoreCase(role));
+            if (isAdmin || isAdminRole) {
+                navView.setAdminVisible(true);
+            }
+        }
+
+        // Then attempt to determine current user's admin status from Firestore (preferred)
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            FirebaseFirestore.getInstance().collection("users").document(uid).get()
+                    .addOnSuccessListener(doc -> {
+                        if (doc != null && doc.exists()) {
+                            boolean docIsAdmin = false;
+                            String docRole = null;
+                            Object isAdminObj = doc.get("isAdmin");
+                            Object roleObj = doc.get("role");
+                            if (isAdminObj instanceof Boolean) {
+                                docIsAdmin = (Boolean) isAdminObj;
+                            } else if (isAdminObj != null) {
+                                String val = isAdminObj.toString().trim().toLowerCase();
+                                docIsAdmin = val.equals("true") || val.equals("1") || val.equals("yes");
+                            }
+                            if (roleObj != null) docRole = roleObj.toString();
+
+                            boolean privileged = docIsAdmin || (docRole != null && ("ADMIN".equalsIgnoreCase(docRole) || "SUPER_ADMIN".equalsIgnoreCase(docRole) || "EXCOM".equalsIgnoreCase(docRole)));
+                            if (privileged) {
+                                navView.setAdminVisible(true);
+                            } else {
+                                navView.setAdminVisible(false);
+                            }
+                        } else {
+                            // fallback: roles/committee checks could be added if needed
+                            Log.d(TAG, "No user document found for uid=" + uid);
+                        }
+                    })
+                    .addOnFailureListener(e -> Log.w(TAG, "Failed to fetch user role: " + e.getMessage()));
         }
 
         navView.setOnNavigationItemSelectedListener(itemId -> {
