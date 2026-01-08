@@ -4,34 +4,65 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?attr/colorSurface"
     tools:context="com.example.ieeeconnect.ui.home.HomeFragment">
 
     <!-- Top app bar / toolbar -->
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/top_app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:theme="@style/ThemeOverlay.Material3.ActionBar"
-            app:title="@string/app_name"
-            app:titleCentered="false"
-            app:navigationIcon="@drawable/ic_ieee_logo"
-            app:menu="@menu/menu_home" />
+            app:title=""
+            app:titleCentered="false">
+
+            <!-- IEEE BUBT Logo -->
+            <ImageView
+                android:id="@+id/toolbarLogo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_ieee_logo"
+                android:contentDescription="@string/logo_desc"
+                android:layout_gravity="start"
+                android:padding="8dp" />
+
+            <!-- Search Icon -->
+            <ImageView
+                android:id="@+id/toolbarSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_search"
+                android:contentDescription="@string/search_desc"
+                android:layout_gravity="end"
+                android:padding="8dp" />
+
+            <!-- Notification Icon -->
+            <ImageView
+                android:id="@+id/toolbarNotification"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_notifications"
+                android:contentDescription="@string/notification_desc"
+                android:layout_gravity="end"
+                android:padding="8dp" />
+        </com.google.android.material.appbar.MaterialToolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <!-- Offline indicator -->
+    <!-- Offline indicator (uses theme error color so it adapts to light/dark) -->
     <TextView
         android:id="@+id/offline_banner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/design_default_color_error"
+        android:background="?attr/colorError"
         android:padding="8dp"
         android:text="@string/offline_banner_text"
-        android:textColor="@android:color/white"
+        android:textColor="?attr/colorOnError"
         android:visibility="gone"
         android:gravity="center"
         app:layout_anchor="@id/top_app_bar"
@@ -48,7 +79,8 @@
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="?attr/colorSurface">
 
             <!-- Featured horizontal carousel -->
             <androidx.recyclerview.widget.RecyclerView
@@ -60,6 +92,7 @@
                 android:clipToPadding="false"
                 android:layout_marginTop="8dp"
                 android:overScrollMode="never"
+                android:background="?attr/colorSurface"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 android:orientation="horizontal" />
 
@@ -70,6 +103,7 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:layout_marginTop="8dp"
+                android:background="?attr/colorSurface"
                 app:shimmer_auto_start="true">
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -79,6 +113,7 @@
                     android:clipToPadding="false"
                     android:paddingTop="8dp"
                     android:paddingBottom="80dp"
+                    android:background="?attr/colorSurface"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
             </com.facebook.shimmer.ShimmerFrameLayout>
@@ -94,7 +129,8 @@
         android:src="@drawable/ic_add"
         app:layout_anchorGravity="bottom|end"
         app:layout_anchor="@id/swipe_refresh"
-        app:tint="@android:color/white"
+        app:backgroundTint="?attr/colorPrimary"
+        app:tint="?attr/colorOnPrimary"
         android:contentDescription="@string/fab_add_desc" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

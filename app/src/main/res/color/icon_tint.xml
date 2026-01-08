@@ -1,0 +1,4 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?attr/colorOnSurface" android:state_checked="false"/> <!-- Dynamic color for light/dark mode -->
+    <item android:color="?attr/colorPrimary" android:state_checked="true"/> <!-- Dynamic color for selected state -->
+</selector>

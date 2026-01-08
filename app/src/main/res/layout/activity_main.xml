@@ -16,8 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <include
-        layout="@layout/custom_bottom_nav"
+    <com.example.ieeeconnect.ui.widgets.CustomBottomNavView
         android:id="@+id/customBottomNavBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
