@@ -14,15 +14,21 @@ import java.util.List;
 public class EventsViewModel extends AndroidViewModel {
     private final EventRepository repository;
     private final LiveData<List<Event>> allEvents;
+    private final LiveData<List<Event>> upcomingEvents;
 
     public EventsViewModel(@NonNull Application application) {
         super(application);
         repository = new EventRepository(application);
         allEvents = repository.getAllEvents();
+        upcomingEvents = repository.getUpcomingEvents(System.currentTimeMillis());
     }
 
     public LiveData<List<Event>> getAllEvents() {
         return allEvents;
+    }
+
+    public LiveData<List<Event>> getUpcomingEvents() {
+        return upcomingEvents;
     }
 
     // trigger a network refresh

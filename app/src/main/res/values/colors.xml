@@ -42,4 +42,7 @@
     <color name="nav_item_selected_bg">#E8E6FF</color>
     <color name="primary_variant">#1976D2</color>
     <color name="navBarBackground">#FFFFFF</color>
+
+    <!-- Purple used on hero register button and pill buttons -->
+    <color name="purple_500">#7C3AED</color>
 </resources>

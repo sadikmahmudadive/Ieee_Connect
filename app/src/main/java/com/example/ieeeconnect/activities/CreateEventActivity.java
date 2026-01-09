@@ -104,23 +104,23 @@ public class CreateEventActivity extends AppCompatActivity {
                 return;
             }
 
-            // Create event with location
-            Event event = new Event(
-                    UUID.randomUUID().toString(),
-                    title,
-                    description,
-                    selectedEventTime,
-                    bannerUrl,
-                    userId,
-                    new ArrayList<>(),
-                    new ArrayList<>(),
-                    location.isEmpty() ? null : location,  // locationName
-                    selectedEventTime,  // startTime
-                    selectedEventTime,  // endTime
-                    null,  // id (Firestore will generate)
-                    location.isEmpty() ? null : location,  // location field
-                    System.currentTimeMillis()  // createdAt
-            );
+            // Use no-arg constructor + setters to avoid constructor mismatch across versions
+            Event event = new Event();
+            event.setEventId(UUID.randomUUID().toString());
+            event.setTitle(title);
+            event.setDescription(description);
+            event.setEventTime(selectedEventTime);
+            event.setBannerUrl(bannerUrl);
+            event.setCreatedByUserId(userId);
+            event.setGoingUserIds(new ArrayList<>());
+            event.setInterestedUserIds(new ArrayList<>());
+            event.setLocationName(location.isEmpty() ? null : location);
+            event.setStartTime(selectedEventTime);
+            event.setEndTime(selectedEventTime);
+            event.setId(null); // Firestore will generate
+            event.setLocation(location.isEmpty() ? null : location);
+            event.setCreatedAt(System.currentTimeMillis());
+            event.setCategory(null);
 
             FirebaseFirestore.getInstance().collection("events")
                     .add(event)

@@ -8,27 +8,29 @@ import androidx.room.TypeConverters;
 
 import com.example.ieeeconnect.database.converters.ListToStringConverter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity(tableName = "events")
 @TypeConverters(ListToStringConverter.class)
 public class Event {
+    // Initialize @NonNull fields to avoid warnings
     @PrimaryKey
     @NonNull
-    private String eventId;
+    private String eventId = "";
     @NonNull
-    private String title;
+    private String title = "";
     @NonNull
-    private String description;
+    private String description = "";
     private long eventTime;
     @Nullable
     private String bannerUrl; // Cloudinary URL
     @Nullable
     private String createdByUserId;
     @NonNull
-    private List<String> goingUserIds;
+    private List<String> goingUserIds = new ArrayList<>();
     @NonNull
-    private List<String> interestedUserIds;
+    private List<String> interestedUserIds = new ArrayList<>();
     @Nullable
     private String locationName;
     private long startTime;
@@ -38,6 +40,8 @@ public class Event {
     @Nullable
     private String location; // Firestore location field
     private long createdAt; // Firestore createdAt timestamp
+    @Nullable
+    private String category; // New field for event category
 
     public Event() {
         // Default constructor required for calls to DataSnapshot.getValue(Event.class)
@@ -46,7 +50,7 @@ public class Event {
     public Event(@NonNull String eventId, @NonNull String title, @NonNull String description, long eventTime,
                  @Nullable String bannerUrl, @Nullable String createdByUserId, @NonNull List<String> goingUserIds,
                  @NonNull List<String> interestedUserIds, @Nullable String locationName, long startTime, long endTime,
-                 @Nullable String id, @Nullable String location, long createdAt) {
+                 @Nullable String id, @Nullable String location, long createdAt, @Nullable String category) {
         this.eventId = eventId;
         this.title = title;
         this.description = description;
@@ -61,6 +65,7 @@ public class Event {
         this.id = id;
         this.location = location;
         this.createdAt = createdAt;
+        this.category = category;
     }
 
     @NonNull
@@ -110,6 +115,21 @@ public class Event {
     public void setLocation(@Nullable String location) { this.location = location; }
     public long getCreatedAt() { return createdAt; }
     public void setCreatedAt(long createdAt) { this.createdAt = createdAt; }
+
+    @Nullable
+    public String getCategory() { return category; }
+    public void setCategory(@Nullable String category) { this.category = category; }
+
+    public String getFormattedTime() {
+        // Example: Format startTime as a readable date
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, yyyy HH:mm", java.util.Locale.getDefault());
+        return sdf.format(new java.util.Date(startTime));
+    }
+
+    public int getLikes() {
+        // Return the number of interested users as likes
+        return interestedUserIds.size();
+    }
 
     @Override
     public boolean equals(Object o) {

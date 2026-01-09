@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.google.services)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
+    // Do NOT apply KSP here; the project did not include KSP plugin in the version catalog and the environment had trouble resolving it.
 }
 
 android {
@@ -12,10 +13,12 @@ android {
     defaultConfig {
         applicationId = "com.example.ieeeconnect"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36 // Updated to the latest version
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Removed incorrect `java { toolchain { ... } }` from defaultConfig. Toolchains are configured at module or top-level, not inside defaultConfig.
     }
 
     buildTypes {
@@ -31,25 +34,18 @@ android {
     }
 
     compileOptions {
+        // Use Java 17 toolchain for compatibility with the installed JDK on the developer machine
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    // Keep the same Kotlin jvm toolchain at module-level too (will be set below)
 }
 
 kotlin {
+    // Use JDK17 toolchain for Kotlin compilation and kapt to avoid module illegal-access problems
     jvmToolchain(17)
 }
-
-kapt {
-    arguments {
-        arg("room.schemaLocation", "$projectDir/schemas")
-        arg("room.incremental", "true")
-        arg("room.expandProjection", "true")
-        // Disable schema verification to avoid native library issues on Windows
-        arg("room.verifySchema", "false")
-    }
-}
-
 
 dependencies {
     // Core Android UI
@@ -87,14 +83,18 @@ dependencies {
 
     // Glide
     implementation(libs.glide)
-    kapt(libs.glide.compiler) // Use kapt for annotation processing
 
     // Room
-    implementation(libs.room.runtime)
-    kapt(libs.room.compiler) // Use kapt for annotation processing
+    implementation(libs.room.runtime) // Updated to 2.8.4
+    // Use KAPT (not annotationProcessor) for Kotlin projects
+    kapt(libs.room.compiler)
 
-    // sqlite-jdbc for kapt (Room verifier on Windows)
-    implementation(libs.sqlite.jdbc)
+    // Add sqlite-jdbc to the KAPT classpath so Room's verifier can load native libraries during annotation processing on Windows.
+    // Use an explicit coordinate to avoid version-catalog lookup issues in some Gradle environments.
+    kapt("org.xerial:sqlite-jdbc:3.41.2.1")
+
+    // Also add sqlite-jdbc to the runtime/implementation classpath so native resources can be found when annotation processors run.
+    implementation("org.xerial:sqlite-jdbc:3.41.2.1")
 
     // Animations & polish
     implementation(libs.lottie)
@@ -108,4 +108,16 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+}
+
+kapt {
+    correctErrorTypes = true
+    includeCompileClasspath = true
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas")
+        arg("room.incremental", "true")
+        // IMPORTANT: disable Room's annotation-time verification on developer machines (Windows)
+        // This prevents Room's DatabaseVerifier from attempting to load native SQLite during kapt
+        arg("room.disableVerification", "true")
+    }
 }

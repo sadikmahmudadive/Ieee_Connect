@@ -16,4 +16,7 @@ public interface EventDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAll(List<Event> events);
+
+    @Query("SELECT * FROM events WHERE startTime > :currentTime ORDER BY startTime ASC")
+    List<Event> getUpcomingEvents(long currentTime);
 }

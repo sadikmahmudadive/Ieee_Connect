@@ -192,7 +192,22 @@ public class EventRepository {
         List<Event> updated = new ArrayList<>();
         for (Event e : current) updated.add(e);
 
-        Event copy = new Event(target.getEventId(), target.getTitle(), target.getDescription(), target.getEventTime(), target.getBannerUrl(), target.getCreatedByUserId(), new ArrayList<>(target.getGoingUserIds()), new ArrayList<>(target.getInterestedUserIds()), target.getLocationName(), target.getStartTime(), target.getEndTime(), target.getId(), target.getLocation(), target.getCreatedAt());
+        Event copy = new Event();
+        copy.setEventId(target.getEventId());
+        copy.setTitle(target.getTitle());
+        copy.setDescription(target.getDescription());
+        copy.setEventTime(target.getEventTime());
+        copy.setBannerUrl(target.getBannerUrl());
+        copy.setCreatedByUserId(target.getCreatedByUserId());
+        copy.setGoingUserIds(new ArrayList<>(target.getGoingUserIds()));
+        copy.setInterestedUserIds(new ArrayList<>(target.getInterestedUserIds()));
+        copy.setLocationName(target.getLocationName());
+        copy.setStartTime(target.getStartTime());
+        copy.setEndTime(target.getEndTime());
+        copy.setId(target.getId());
+        copy.setLocation(target.getLocation());
+        copy.setCreatedAt(target.getCreatedAt());
+        copy.setCategory(target.getCategory());
 
         if (wasGoing) {
             copy.getGoingUserIds().remove(userId);
@@ -282,7 +297,22 @@ public class EventRepository {
         List<Event> updated = new ArrayList<>();
         for (Event e : current) updated.add(e);
 
-        Event copy = new Event(target.getEventId(), target.getTitle(), target.getDescription(), target.getEventTime(), target.getBannerUrl(), target.getCreatedByUserId(), new ArrayList<>(target.getGoingUserIds()), new ArrayList<>(target.getInterestedUserIds()), target.getLocationName(), target.getStartTime(), target.getEndTime(), target.getId(), target.getLocation(), target.getCreatedAt());
+        Event copy = new Event();
+        copy.setEventId(target.getEventId());
+        copy.setTitle(target.getTitle());
+        copy.setDescription(target.getDescription());
+        copy.setEventTime(target.getEventTime());
+        copy.setBannerUrl(target.getBannerUrl());
+        copy.setCreatedByUserId(target.getCreatedByUserId());
+        copy.setGoingUserIds(new ArrayList<>(target.getGoingUserIds()));
+        copy.setInterestedUserIds(new ArrayList<>(target.getInterestedUserIds()));
+        copy.setLocationName(target.getLocationName());
+        copy.setStartTime(target.getStartTime());
+        copy.setEndTime(target.getEndTime());
+        copy.setId(target.getId());
+        copy.setLocation(target.getLocation());
+        copy.setCreatedAt(target.getCreatedAt());
+        copy.setCategory(target.getCategory());
 
         if (wasInterested) {
             copy.getInterestedUserIds().remove(userId);
@@ -318,5 +348,14 @@ public class EventRepository {
                         revertEventTo(eventId, target);
                     });
         }
+    }
+
+    public LiveData<List<Event>> getUpcomingEvents(long currentTime) {
+        MutableLiveData<List<Event>> upcomingEvents = new MutableLiveData<>();
+        diskIO.execute(() -> {
+            List<Event> events = eventDao.getUpcomingEvents(currentTime);
+            upcomingEvents.postValue(events);
+        });
+        return upcomingEvents;
     }
 }

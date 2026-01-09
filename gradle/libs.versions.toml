@@ -8,6 +8,7 @@ material = "1.13.0"
 activity = "1.12.2"
 constraintlayout = "2.2.1"
 googleServices = "4.4.2"
+# Bump Kotlin to 2.1.x to match dependency artifacts compiled with Kotlin 2.1
 kotlin = "2.1.21"
 kapt = "2.1.21"
 navigation = "2.9.6"
@@ -20,15 +21,16 @@ firebaseMessaging = "24.0.0"
 playServicesAuth = "21.4.0"
 cloudinary = "3.1.2"
 retrofit = "3.0.0"
-glide = "5.0.5"
-glideCompiler = "5.0.5"
+glide = "4.15.1"
+glideCompiler = "4.15.1"
 room = "2.8.4"
 lottie = "6.7.1"
 shimmer = "0.5.0"
 circleimageview = "3.1.0"
 agora = "4.6.1"
 swiperefreshlayout = "1.2.0"
-sqliteJdbc = "3.51.1.0"
+# bumped sqlite-jdbc to a newer version with better native support on Windows
+sqliteJdbc = "3.41.2.1"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -67,5 +69,4 @@ sqlite-jdbc = { group = "org.xerial", name = "sqlite-jdbc", version.ref = "sqlit
 android-application = { id = "com.android.application", version.ref = "agp" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kapt" }

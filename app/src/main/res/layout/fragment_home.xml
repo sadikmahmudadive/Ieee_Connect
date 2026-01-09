@@ -8,95 +8,158 @@
     tools:context="com.example.ieeeconnect.ui.home.HomeFragment">
 
     <!-- Top app bar / toolbar -->
-    <com.google.android.material.appbar.AppBarLayout
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/top_app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp">
+        android:theme="@style/ThemeOverlay.Material3.ActionBar"
+        app:title=""
+        app:titleCentered="false"
+        android:background="?attr/colorSurface"
+        android:elevation="4dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="0dp">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/top_app_bar"
-            android:layout_width="match_parent"
+        <!-- IEEE BUBT Logo -->
+        <ImageView
+            android:id="@+id/toolbarLogo"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:theme="@style/ThemeOverlay.Material3.ActionBar"
-            app:title=""
-            app:titleCentered="false">
+            android:layout_gravity="start"
+            android:contentDescription="@string/logo_desc"
+            android:padding="8dp"
+            android:src="@drawable/ic_ieee_logo" />
 
-            <!-- IEEE BUBT Logo -->
-            <ImageView
-                android:id="@+id/toolbarLogo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_ieee_logo"
-                android:contentDescription="@string/logo_desc"
-                android:layout_gravity="start"
-                android:padding="8dp" />
+        <!-- Search Icon -->
+        <ImageView
+            android:id="@+id/toolbarSearch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:contentDescription="@string/search_desc"
+            android:padding="8dp"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/ic_search" />
 
-            <!-- Search Icon -->
-            <ImageView
-                android:id="@+id/toolbarSearch"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_search"
-                android:contentDescription="@string/search_desc"
-                android:layout_gravity="end"
-                android:padding="8dp" />
+        <!-- Notification Icon -->
+        <ImageView
+            android:id="@+id/toolbarNotification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:contentDescription="@string/notification_desc"
+            android:padding="8dp"
+            android:src="@drawable/ic_notifications" />
+    </com.google.android.material.appbar.MaterialToolbar>
 
-            <!-- Notification Icon -->
-            <ImageView
-                android:id="@+id/toolbarNotification"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_notifications"
-                android:contentDescription="@string/notification_desc"
-                android:layout_gravity="end"
-                android:padding="8dp" />
-        </com.google.android.material.appbar.MaterialToolbar>
-
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <!-- Offline indicator (uses theme error color so it adapts to light/dark) -->
+    <!-- Offline indicator -->
     <TextView
         android:id="@+id/offline_banner"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorError"
-        android:padding="8dp"
+        android:padding="4dp"
         android:text="@string/offline_banner_text"
         android:textColor="?attr/colorOnError"
         android:visibility="gone"
         android:gravity="center"
-        app:layout_anchor="@id/top_app_bar"
-        app:layout_anchorGravity="bottom" />
+        android:layout_marginTop="56dp"
+        android:elevation="2dp" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_marginTop="0dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:layout_below="@id/top_app_bar"
         tools:ignore="MissingClass">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?attr/colorSurface">
+            android:background="?attr/colorSurface"
+            android:paddingTop="8dp"
+            android:paddingBottom="0dp">
+
+            <!-- Hero banner for upcoming event -->
+            <FrameLayout
+                android:id="@+id/hero_container"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
+                android:layout_marginTop="8dp">
+
+                <ImageView
+                    android:id="@+id/hero_banner"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/hero_banner_desc"
+                    android:src="@drawable/ic_launcher_background"
+                    android:background="?attr/colorSurface" />
+
+                <!-- Gradient overlay for text readability -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/gradient_overlay" />
+
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:gravity="bottom">
+
+                    <TextView
+                        android:id="@+id/hero_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Example"
+                        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+                        android:textColor="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/hero_countdown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Starts in 00:00:00"
+                        android:textColor="@android:color/white"
+                        android:layout_marginTop="6dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/hero_register"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Register Now"
+                        style="@style/Widget.MaterialComponents.Button"
+                        android:layout_marginTop="8dp"
+                        app:cornerRadius="20dp"
+                        app:iconGravity="textStart"
+                        android:backgroundTint="@color/purple_500"
+                        android:textColor="@android:color/white" />
+
+                </LinearLayout>
+            </FrameLayout>
 
             <!-- Featured horizontal carousel -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/featured_recycler"
                 android:layout_width="match_parent"
                 android:layout_height="160dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:background="?attr/colorSurface"
+                android:clipToPadding="false"
+                android:orientation="horizontal"
+                android:overScrollMode="never"
                 android:paddingStart="8dp"
                 android:paddingEnd="8dp"
-                android:clipToPadding="false"
-                android:layout_marginTop="8dp"
-                android:overScrollMode="never"
-                android:background="?attr/colorSurface"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                android:orientation="horizontal" />
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-            <!-- Shimmer wrapper for loading state around main feed -->
             <com.facebook.shimmer.ShimmerFrameLayout
                 android:id="@+id/shimmer"
                 android:layout_width="match_parent"
@@ -110,13 +173,24 @@
                     android:id="@+id/recycler"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:background="?attr/colorSurface"
                     android:clipToPadding="false"
                     android:paddingTop="8dp"
                     android:paddingBottom="80dp"
-                    android:background="?attr/colorSurface"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
             </com.facebook.shimmer.ShimmerFrameLayout>
+
+            <!-- Categories TextView -->
+            <TextView
+                android:id="@+id/categoriesTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="Categories"
+                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
+                android:gravity="center"
+                android:visibility="visible" />
 
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
@@ -125,10 +199,9 @@
         android:id="@+id/fab_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
         android:src="@drawable/ic_add"
-        app:layout_anchorGravity="bottom|end"
-        app:layout_anchor="@id/swipe_refresh"
         app:backgroundTint="?attr/colorPrimary"
         app:tint="?attr/colorOnPrimary"
         android:contentDescription="@string/fab_add_desc" />

@@ -58,4 +58,12 @@
     <string name="committee">Committee</string>
     <string name="profile">Profile</string>
 
+    <!-- Toolbar component strings -->
+    <string name="logo_desc">IEEE BUBT Logo</string>
+    <string name="search_desc">Search</string>
+    <string name="notification_desc">Notifications</string>
+
+    <!-- Missing strings required by fragment_home.xml -->
+    <string name="hero_banner_desc">Hero event banner</string>
+
 </resources>

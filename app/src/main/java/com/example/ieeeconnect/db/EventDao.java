@@ -20,5 +20,7 @@ public interface EventDao {
 
     @Query("DELETE FROM events")
     void clearAll();
-}
 
+    @Query("SELECT * FROM events WHERE startTime > :currentTime ORDER BY startTime ASC")
+    List<EventEntity> getUpcomingEvents(long currentTime);
+}
