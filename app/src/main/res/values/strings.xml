@@ -48,7 +48,7 @@
     <!-- LoginActivity strings -->
     <string name="error_email_required">Email is required</string>
     <string name="error_password_required">Password is required</string>
-    <string name="signing_in">Signing in...</string>
+    <string name="signing_in">Signing in&#8230;</string>
     <string name="log_in">Log In</string>
 
     <!-- Custom bottom nav content descriptions (kept for backward compatibility) -->
@@ -64,6 +64,8 @@
     <string name="notification_desc">Notifications</string>
 
     <!-- Missing strings required by fragment_home.xml -->
-    <string name="hero_banner_desc">Hero event banner</string>
-
+    <string name="hero_banner_desc">Welcome to IEEE Connect! Stay updated with the latest events, news, and opportunities.</string>
+    <string name="starting_now">Starting now</string>
+    <string name="feed_empty">No feed items to show. Check back later!</string>
+    <string name="feed_error">Failed to load feed. Please try again.</string>
 </resources>

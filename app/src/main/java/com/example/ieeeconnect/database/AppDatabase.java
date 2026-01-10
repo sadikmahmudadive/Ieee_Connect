@@ -13,8 +13,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.example.ieeeconnect.database.converters.ListToStringConverter;
 import com.example.ieeeconnect.domain.model.Event;
 
-// Bumped version to 20 to reflect schema changes and allow destructive migration on mismatch.
-@Database(entities = {Event.class, PendingEvent.class}, version = 20, exportSchema = false)
+// Bumped version to 21 to reflect schema changes and allow non-destructive migration for 'category' column.
+@Database(entities = {Event.class, PendingEvent.class}, version = 21, exportSchema = false)
 @TypeConverters(ListToStringConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract EventDao eventDao();
@@ -68,6 +68,16 @@ public abstract class AppDatabase extends RoomDatabase {
         }
     };
 
+    // Migration from v20 -> v21: add 'category' column if it does not exist (non-destructive)
+    public static final Migration MIGRATION_20_21 = new Migration(20, 21) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            try {
+                database.execSQL("ALTER TABLE events ADD COLUMN category TEXT");
+            } catch (Exception ignored) {}
+        }
+    };
+
     public static AppDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
             synchronized (AppDatabase.class) {
@@ -75,7 +85,7 @@ public abstract class AppDatabase extends RoomDatabase {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                             AppDatabase.class, "ieee_connect_database_v8")
                             // Register migrations so Room can upgrade without destroying user data.
-                            .addMigrations(MIGRATION_19_20)
+                            .addMigrations(MIGRATION_19_20, MIGRATION_20_21)
                             .build();
                 }
             }

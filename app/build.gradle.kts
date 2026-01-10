@@ -89,12 +89,19 @@ dependencies {
     // Use KAPT (not annotationProcessor) for Kotlin projects
     kapt(libs.room.compiler)
 
-    // Add sqlite-jdbc to the KAPT classpath so Room's verifier can load native libraries during annotation processing on Windows.
-    // Use an explicit coordinate to avoid version-catalog lookup issues in some Gradle environments.
-    kapt("org.xerial:sqlite-jdbc:3.41.2.1")
+    // Add sqlite-jdbc to the KAPT classpath so Room's verifier can find a native library during annotation processing on Windows.
+    // Use an older, widely-compatible version that contains the expected native layout for Windows x86_64.
+    kapt("org.xerial:sqlite-jdbc:3.36.0.3")
 
     // Also add sqlite-jdbc to the runtime/implementation classpath so native resources can be found when annotation processors run.
-    implementation("org.xerial:sqlite-jdbc:3.41.2.1")
+    implementation("org.xerial:sqlite-jdbc:3.36.0.3")
+
+    // QR Code
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.google.zxing:core:3.4.1")
+
+    // Image Cropping
+    implementation("com.github.yalantis:ucrop:2.2.8")
 
     // Animations & polish
     implementation(libs.lottie)
@@ -112,12 +119,13 @@ dependencies {
 
 kapt {
     correctErrorTypes = true
-    includeCompileClasspath = true
+    // Avoid forcing the compile classpath into kapt; keep default false unless you have a reason
+    includeCompileClasspath = false
     arguments {
         arg("room.schemaLocation", "$projectDir/schemas")
         arg("room.incremental", "true")
-        // IMPORTANT: disable Room's annotation-time verification on developer machines (Windows)
-        // This prevents Room's DatabaseVerifier from attempting to load native SQLite during kapt
-        arg("room.disableVerification", "true")
+        arg("room.expandProjection", "true")
+        // Disable schema verification to avoid SQLite native error on Windows
+        arg("room.verifySchema", "false")
     }
 }

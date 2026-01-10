@@ -36,8 +36,10 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.airbnb.lottie.LottieAnimationView;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public class HomeFragment extends Fragment {
@@ -103,16 +105,35 @@ public class HomeFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(EventsViewModel.class);
         // Observe and update both featured and main feed
         viewModel.getAllEvents().observe(getViewLifecycleOwner(), events -> {
-            // stop shimmer
-            binding.shimmer.stopShimmer();
-            binding.shimmer.setVisibility(View.GONE);
+            if (events == null || events.isEmpty()) {
+                binding.recycler.setVisibility(View.GONE);
+                binding.emptyState.setVisibility(View.VISIBLE);
+            } else {
+                binding.recycler.setVisibility(View.VISIBLE);
+                binding.emptyState.setVisibility(View.GONE);
+                adapter.setItems(events);
 
-            // update feed using DiffUtil
-            adapter.setItems(events != null ? events : new ArrayList<>());
+                // Update featured carousel
+                List<Event> featured = events.size() > 5 ? events.subList(0, 5) : events;
+                featuredAdapter.setItems(new ArrayList<>(featured));
 
-            // featured: pick first 5 events as featured
-            List<Event> featured = (events != null && events.size() > 5) ? events.subList(0, 5) : (events != null ? events : new ArrayList<>());
-            featuredAdapter.setItems(new ArrayList<>(featured));
+                // Update hero banner
+                Event nextEvent = events.stream()
+                        .filter(event -> event.getStartTime() > System.currentTimeMillis())
+                        .min(Comparator.comparingLong(Event::getStartTime))
+                        .orElse(null);
+
+                if (nextEvent != null) {
+                    binding.heroContainer.setVisibility(View.VISIBLE);
+                    binding.heroTitle.setText(nextEvent.getTitle());
+                    Glide.with(binding.heroBanner.getContext())
+                            .load(nextEvent.getBannerUrl())
+                            .placeholder(R.drawable.ic_launcher_background)
+                            .into(binding.heroBanner);
+                } else {
+                    binding.heroContainer.setVisibility(View.GONE);
+                }
+            }
 
             // hide swipe refresh if active
             SwipeRefreshLayout swipe = binding.getRoot().findViewById(com.example.ieeeconnect.R.id.swipe_refresh);
@@ -167,7 +188,8 @@ public class HomeFragment extends Fragment {
 
                         @Override
                         public void onFinish() {
-                            binding.heroCountdown.setText("Starting now");
+                            // Use string resource for localization
+                            binding.heroCountdown.setText(getString(R.string.starting_now));
                         }
                     };
                     heroTimer.start();
@@ -210,6 +232,30 @@ public class HomeFragment extends Fragment {
         });
 
         checkAdminAndShowFab();
+
+        // Corrected SwipeRefreshLayout reference
+        binding.swipeRefresh.setOnRefreshListener(() -> {
+            if (viewModel != null) {
+                viewModel.refreshFromNetwork();
+                Toast.makeText(requireContext(), "Refreshing feed...", Toast.LENGTH_SHORT).show();
+            } else {
+                binding.swipeRefresh.setRefreshing(false);
+                Toast.makeText(requireContext(), "Unable to refresh feed.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Handle empty state visibility
+        viewModel.getAllEvents().observe(getViewLifecycleOwner(), events -> {
+            if (events == null || events.isEmpty()) {
+                binding.recycler.setVisibility(View.GONE);
+                binding.emptyState.setVisibility(View.VISIBLE);
+            } else {
+                binding.recycler.setVisibility(View.VISIBLE);
+                binding.emptyState.setVisibility(View.GONE);
+                adapter.setItems(events);
+            }
+            binding.swipeRefresh.setRefreshing(false);
+        });
     }
 
     private String formatCountdown(long millis) {
@@ -217,7 +263,8 @@ public class HomeFragment extends Fragment {
         long h = seconds / 3600;
         long m = (seconds % 3600) / 60;
         long s = seconds % 60;
-        return String.format("Starts in %02d:%02d:%02d", h, m, s);
+        // Specify Locale in String.format
+        return String.format(Locale.getDefault(), "Starts in %02d:%02d:%02d", h, m, s);
     }
 
     @Override
@@ -332,7 +379,7 @@ public class HomeFragment extends Fragment {
                     if (o.getLikes() != n.getLikes()) payload.putBoolean("likes", true);
                     if (!java.util.Objects.equals(o.getFormattedTime(), n.getFormattedTime()))
                         payload.putBoolean("time", true);
-                    return payload.size() == 0 ? null : payload;
+                    return payload.isEmpty() ? null : payload;
                 }
             });
             items.clear();
@@ -348,7 +395,7 @@ public class HomeFragment extends Fragment {
         @Override
         public long getItemId(int position) {
             Event e = items.get(position);
-            return e != null && e.getEventId() != null ? (long) e.getEventId().hashCode() : position;
+            return e.getEventId().hashCode();
         }
 
         @Override
@@ -373,14 +420,13 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull VH holder, int position, @NonNull List<Object> payloads) {
-            if (payloads == null || payloads.isEmpty()) {
+            if (payloads.isEmpty()) {
                 onBindViewHolder(holder, position);
                 return;
             }
             // partial update
             Object payload = payloads.get(payloads.size() - 1);
-            if (payload instanceof android.os.Bundle) {
-                android.os.Bundle b = (android.os.Bundle) payload;
+            if (payload instanceof android.os.Bundle b) {
                 Event e = items.get(position);
                 if (b.getBoolean("title", false)) holder.title.setText(e.getTitle());
                 if (b.getBoolean("banner", false)) {
@@ -465,7 +511,7 @@ public class HomeFragment extends Fragment {
                     if (o.getLikes() != n.getLikes()) payload.putBoolean("likes", true);
                     if (!java.util.Objects.equals(o.getFormattedTime(), n.getFormattedTime()))
                         payload.putBoolean("time", true);
-                    return payload.size() == 0 ? null : payload;
+                    return payload.isEmpty() ? null : payload;
                 }
             });
             items.clear();
@@ -481,7 +527,7 @@ public class HomeFragment extends Fragment {
         @Override
         public long getItemId(int position) {
             Event e = items.get(position);
-            return e != null && e.getEventId() != null ? (long) e.getEventId().hashCode() : position;
+            return e.getEventId().hashCode();
         }
 
         @Override
@@ -517,13 +563,12 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull FeedAdapter.VH holder, int position, @NonNull List<Object> payloads) {
-            if (payloads == null || payloads.isEmpty()) {
+            if (payloads.isEmpty()) {
                 onBindViewHolder(holder, position);
                 return;
             }
             Object payload = payloads.get(payloads.size() - 1);
-            if (payload instanceof android.os.Bundle) {
-                android.os.Bundle b = (android.os.Bundle) payload;
+            if (payload instanceof android.os.Bundle b) {
                 Event event = items.get(position);
                 if (b.getBoolean("title", false)) holder.title.setText(event.getTitle());
                 if (b.getBoolean("desc", false)) holder.description.setText(event.getDescription());
