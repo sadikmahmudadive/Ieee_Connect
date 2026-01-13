@@ -89,12 +89,14 @@ dependencies {
     // Use KAPT (not annotationProcessor) for Kotlin projects
     kapt(libs.room.compiler)
 
-    // Add sqlite-jdbc to the KAPT classpath so Room's verifier can find a native library during annotation processing on Windows.
-    // Use an older, widely-compatible version that contains the expected native layout for Windows x86_64.
-    kapt("org.xerial:sqlite-jdbc:3.36.0.3")
+    // Add sqlite-jdbc to the KAPT and compile classpaths so Room's verifier can find a native library during annotation processing on Windows.
+    kapt(libs.sqlite.jdbc)
+    compileOnly(libs.sqlite.jdbc)
+    implementation(libs.sqlite.jdbc)
 
-    // Also add sqlite-jdbc to the runtime/implementation classpath so native resources can be found when annotation processors run.
-    implementation("org.xerial:sqlite-jdbc:3.36.0.3")
+    // Also add an explicit fallback coordinate for sqlite-jdbc to ensure the jar with native resources is available
+    kapt("org.xerial:sqlite-jdbc:3.42.0.0")
+    implementation("org.xerial:sqlite-jdbc:3.42.0.0")
 
     // QR Code
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
@@ -119,13 +121,18 @@ dependencies {
 
 kapt {
     correctErrorTypes = true
-    // Avoid forcing the compile classpath into kapt; keep default false unless you have a reason
-    includeCompileClasspath = false
+    // Allow the compile classpath resources (sqlite-jdbc native files) to be visible to kapt so Room's verifier can load them on Windows
+    includeCompileClasspath = true
+    javacOptions {
+        // Provide annotation processor option as javac option too to make sure processors running on different paths see it
+        option("room.disableVerification", "true")
+    }
     arguments {
         arg("room.schemaLocation", "$projectDir/schemas")
         arg("room.incremental", "true")
         arg("room.expandProjection", "true")
-        // Disable schema verification to avoid SQLite native error on Windows
-        arg("room.verifySchema", "false")
+        // Disable Room's runtime verification during kapt to avoid native sqlite lookup on the build machine (Windows);
+        // this only disables the verifier step during annotation processing — the app will still use Room at runtime.
+        arg("room.disableVerification", "true")
     }
 }

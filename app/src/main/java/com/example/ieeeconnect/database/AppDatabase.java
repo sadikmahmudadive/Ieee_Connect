@@ -14,7 +14,8 @@ import com.example.ieeeconnect.database.converters.ListToStringConverter;
 import com.example.ieeeconnect.domain.model.Event;
 
 // Bumped version to 21 to reflect schema changes and allow non-destructive migration for 'category' column.
-@Database(entities = {Event.class, PendingEvent.class}, version = 21, exportSchema = false)
+// Enable exportSchema so the annotation processor will write schema JSON files to the configured kapt schemaLocation.
+@Database(entities = {Event.class, PendingEvent.class}, version = 21, exportSchema = true)
 @TypeConverters(ListToStringConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract EventDao eventDao();

@@ -27,6 +27,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // JitPack is required for some GitHub-hosted libraries like uCrop
+        maven(url = "https://jitpack.io")
     }
 }
 

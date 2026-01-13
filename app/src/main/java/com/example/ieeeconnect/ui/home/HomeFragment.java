@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.bumptech.glide.Glide;
@@ -84,7 +85,8 @@ public class HomeFragment extends Fragment {
             Toast.makeText(requireContext(), "Notifications clicked", Toast.LENGTH_SHORT).show();
         });
 
-        adapter = new FeedAdapter(new ArrayList<>());
+        // Use ListAdapter-based FeedAdapter to leverage AsyncListDiffer for background diffs and minimal UI rebinds
+        adapter = new FeedAdapter();
         binding.recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         // Turn off default change animations to avoid flashing on updates
         // Disable change animations but keep default animator for add/remove performance
@@ -99,7 +101,7 @@ public class HomeFragment extends Fragment {
 
         // Featured carousel: simple horizontal list using same Event model for now
         binding.featuredRecycler.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        FeaturedAdapter featuredAdapter = new FeaturedAdapter(new ArrayList<>());
+        FeaturedAdapter featuredAdapter = new FeaturedAdapter();
         binding.featuredRecycler.setAdapter(featuredAdapter);
 
         viewModel = new ViewModelProvider(this).get(EventsViewModel.class);
@@ -111,11 +113,12 @@ public class HomeFragment extends Fragment {
             } else {
                 binding.recycler.setVisibility(View.VISIBLE);
                 binding.emptyState.setVisibility(View.GONE);
-                adapter.setItems(events);
+                // Use submitList on ListAdapter which does diffing on background thread
+                adapter.submitList(new ArrayList<>(events));
 
                 // Update featured carousel
                 List<Event> featured = events.size() > 5 ? events.subList(0, 5) : events;
-                featuredAdapter.setItems(new ArrayList<>(featured));
+                featuredAdapter.submitList(new ArrayList<>(featured));
 
                 // Update hero banner
                 Event nextEvent = events.stream()
@@ -244,18 +247,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        // Handle empty state visibility
-        viewModel.getAllEvents().observe(getViewLifecycleOwner(), events -> {
-            if (events == null || events.isEmpty()) {
-                binding.recycler.setVisibility(View.GONE);
-                binding.emptyState.setVisibility(View.VISIBLE);
-            } else {
-                binding.recycler.setVisibility(View.VISIBLE);
-                binding.emptyState.setVisibility(View.GONE);
-                adapter.setItems(events);
-            }
-            binding.swipeRefresh.setRefreshing(false);
-        });
+        // Removed duplicate observer that caused redundant updates and UI flashing. The single observer above handles empty state, hero, featured carousel and offline banner.
     }
 
     private String formatCountdown(long millis) {
@@ -322,84 +314,37 @@ public class HomeFragment extends Fragment {
         return caps != null && (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) || caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR));
     }
 
-    // Simple featured adapter
-    private static class FeaturedAdapter extends androidx.recyclerview.widget.RecyclerView.Adapter<FeaturedAdapter.VH> {
-        private final List<Event> items;
+    // Simple featured adapter using ListAdapter/AsyncListDiffer
+    private static class FeaturedAdapter extends androidx.recyclerview.widget.ListAdapter<Event, FeaturedAdapter.VH> {
+        protected FeaturedAdapter() {
+            super(new DiffUtil.ItemCallback<>() {
+                 @Override
+                 public boolean areItemsTheSame(@NonNull Event oldItem, @NonNull Event newItem) {
+                     return oldItem.getEventId().equals(newItem.getEventId());
+                 }
 
-        FeaturedAdapter(List<Event> items) {
-            this.items = items;
-            // enable stable ids so RecyclerView can preserve views during updates
-            setHasStableIds(true);
-        }
-
-        void setItems(List<Event> newItems) {
-            // Use DiffUtil for efficient updates
-            final List<Event> old = new ArrayList<>(items);
-            DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
-                @Override
-                public int getOldListSize() {
-                    return old.size();
-                }
-
-                @Override
-                public int getNewListSize() {
-                    return newItems.size();
-                }
-
-                @Override
-                public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-                    return old.get(oldItemPosition).getEventId().equals(newItems.get(newItemPosition).getEventId());
-                }
-
-                @Override
-                public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-                    Event o = old.get(oldItemPosition);
-                    Event n = newItems.get(newItemPosition);
-                    // compare key displayed fields to avoid unnecessary rebinds
-                    boolean sameTitle = java.util.Objects.equals(o.getTitle(), n.getTitle());
-                    boolean sameBanner = java.util.Objects.equals(o.getBannerUrl(), n.getBannerUrl());
-                    boolean sameDesc = java.util.Objects.equals(o.getDescription(), n.getDescription());
-                    boolean sameLikes = o.getLikes() == n.getLikes();
-                    boolean sameTime = java.util.Objects.equals(o.getFormattedTime(), n.getFormattedTime());
-                    return sameTitle && sameBanner && sameDesc && sameLikes && sameTime;
-                }
-
-                @Nullable
-                @Override
-                public Object getChangePayload(int oldItemPosition, int newItemPosition) {
-                    Event o = old.get(oldItemPosition);
-                    Event n = newItems.get(newItemPosition);
-                    android.os.Bundle payload = new android.os.Bundle();
-                    if (!java.util.Objects.equals(o.getTitle(), n.getTitle()))
-                        payload.putBoolean("title", true);
-                    if (!java.util.Objects.equals(o.getBannerUrl(), n.getBannerUrl()))
-                        payload.putBoolean("banner", true);
-                    if (!java.util.Objects.equals(o.getDescription(), n.getDescription()))
-                        payload.putBoolean("desc", true);
-                    if (o.getLikes() != n.getLikes()) payload.putBoolean("likes", true);
-                    if (!java.util.Objects.equals(o.getFormattedTime(), n.getFormattedTime()))
-                        payload.putBoolean("time", true);
-                    return payload.isEmpty() ? null : payload;
-                }
-            });
-            items.clear();
-            items.addAll(newItems);
-            diff.dispatchUpdatesTo(this);
-        }
-
-        @Override
-        public int getItemCount() {
-            return items.size();
-        }
+                 @Override
+                 public boolean areContentsTheSame(@NonNull Event oldItem, @NonNull Event newItem) {
+                     // compare key displayed fields to avoid unnecessary rebinds
+                     boolean sameTitle = java.util.Objects.equals(oldItem.getTitle(), newItem.getTitle());
+                     boolean sameBanner = java.util.Objects.equals(oldItem.getBannerUrl(), newItem.getBannerUrl());
+                     boolean sameDesc = java.util.Objects.equals(oldItem.getDescription(), newItem.getDescription());
+                     boolean sameLikes = oldItem.getLikes() == newItem.getLikes();
+                     boolean sameTime = java.util.Objects.equals(oldItem.getFormattedTime(), newItem.getFormattedTime());
+                     return sameTitle && sameBanner && sameDesc && sameLikes && sameTime;
+                 }
+             });
+             setHasStableIds(true);
+         }
 
         @Override
         public long getItemId(int position) {
-            Event e = items.get(position);
-            return e.getEventId().hashCode();
+            Event e = getItem(position);
+            return e != null ? e.getEventId().hashCode() : RecyclerView.NO_ID;
         }
 
-        @Override
         @NonNull
+        @Override
         public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(parent.getContext()).inflate(com.example.ieeeconnect.R.layout.item_featured, parent, false);
             return new VH(v);
@@ -407,39 +352,8 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull VH holder, int position) {
-            // full bind
-            Event e = items.get(position);
-            holder.title.setText(e.getTitle());
-            Glide.with(holder.banner.getContext())
-                    .load(e.getBannerUrl())
-                    .placeholder(R.drawable.ic_launcher_background)
-                    .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.AUTOMATIC)
-                    .dontAnimate()
-                    .into(holder.banner);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull VH holder, int position, @NonNull List<Object> payloads) {
-            if (payloads.isEmpty()) {
-                onBindViewHolder(holder, position);
-                return;
-            }
-            // partial update
-            Object payload = payloads.get(payloads.size() - 1);
-            if (payload instanceof android.os.Bundle b) {
-                Event e = items.get(position);
-                if (b.getBoolean("title", false)) holder.title.setText(e.getTitle());
-                if (b.getBoolean("banner", false)) {
-                    Glide.with(holder.banner.getContext())
-                            .load(e.getBannerUrl())
-                            .placeholder(R.drawable.ic_launcher_background)
-                            .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.AUTOMATIC)
-                            .dontAnimate()
-                            .into(holder.banner);
-                }
-            } else {
-                onBindViewHolder(holder, position);
-            }
+            Event e = getItem(position);
+            holder.bind(e);
         }
 
         static class VH extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
@@ -451,130 +365,85 @@ public class HomeFragment extends Fragment {
                 banner = itemView.findViewById(com.example.ieeeconnect.R.id.featured_image);
                 title = itemView.findViewById(com.example.ieeeconnect.R.id.featured_title);
             }
+
+            void bind(Event e) {
+                title.setText(e.getTitle());
+                Glide.with(banner.getContext())
+                        .load(e.getBannerUrl())
+                        .placeholder(R.drawable.ic_launcher_background)
+                        .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.AUTOMATIC)
+                        .dontAnimate()
+                        .into(banner);
+            }
         }
     }
 
-    // Lightweight feed adapter with DiffUtil
-    private static class FeedAdapter extends androidx.recyclerview.widget.RecyclerView.Adapter<FeedAdapter.VH> {
-        private final List<Event> items;
-
-        FeedAdapter(List<Event> items) {
-            this.items = items;
-            // help RecyclerView keep item views stable during DiffUtil updates
-            setHasStableIds(true);
-        }
-
-        void setItems(List<Event> newItems) {
-            // Use DiffUtil for efficient updates
-            final List<Event> old = new ArrayList<>(items);
-            DiffUtil.DiffResult diff = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+    // Feed adapter migrated to ListAdapter for background diffs and minimal rebinds
+    private static class FeedAdapter extends androidx.recyclerview.widget.ListAdapter<Event, FeedAdapter.VH> {
+        protected FeedAdapter() {
+            super(new DiffUtil.ItemCallback<>() {
                 @Override
-                public int getOldListSize() {
-                    return old.size();
+                public boolean areItemsTheSame(@NonNull Event oldItem, @NonNull Event newItem) {
+                    return oldItem.getEventId().equals(newItem.getEventId());
                 }
 
                 @Override
-                public int getNewListSize() {
-                    return newItems.size();
-                }
-
-                @Override
-                public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-                    return old.get(oldItemPosition).getEventId().equals(newItems.get(newItemPosition).getEventId());
-                }
-
-                @Override
-                public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-                    Event o = old.get(oldItemPosition);
-                    Event n = newItems.get(newItemPosition);
-                    // compare key displayed fields to avoid unnecessary rebinds
-                    boolean sameTitle = java.util.Objects.equals(o.getTitle(), n.getTitle());
-                    boolean sameBanner = java.util.Objects.equals(o.getBannerUrl(), n.getBannerUrl());
-                    boolean sameDesc = java.util.Objects.equals(o.getDescription(), n.getDescription());
-                    boolean sameLikes = o.getLikes() == n.getLikes();
-                    boolean sameTime = java.util.Objects.equals(o.getFormattedTime(), n.getFormattedTime());
+                public boolean areContentsTheSame(@NonNull Event oldItem, @NonNull Event newItem) {
+                    boolean sameTitle = java.util.Objects.equals(oldItem.getTitle(), newItem.getTitle());
+                    boolean sameBanner = java.util.Objects.equals(oldItem.getBannerUrl(), newItem.getBannerUrl());
+                    boolean sameDesc = java.util.Objects.equals(oldItem.getDescription(), newItem.getDescription());
+                    boolean sameLikes = oldItem.getLikes() == newItem.getLikes();
+                    boolean sameTime = java.util.Objects.equals(oldItem.getFormattedTime(), newItem.getFormattedTime());
                     return sameTitle && sameBanner && sameDesc && sameLikes && sameTime;
                 }
 
                 @Nullable
                 @Override
-                public Object getChangePayload(int oldItemPosition, int newItemPosition) {
-                    Event o = old.get(oldItemPosition);
-                    Event n = newItems.get(newItemPosition);
+                public Object getChangePayload(@NonNull Event oldItem, @NonNull Event newItem) {
                     android.os.Bundle payload = new android.os.Bundle();
-                    if (!java.util.Objects.equals(o.getTitle(), n.getTitle()))
-                        payload.putBoolean("title", true);
-                    if (!java.util.Objects.equals(o.getBannerUrl(), n.getBannerUrl()))
-                        payload.putBoolean("banner", true);
-                    if (!java.util.Objects.equals(o.getDescription(), n.getDescription()))
-                        payload.putBoolean("desc", true);
-                    if (o.getLikes() != n.getLikes()) payload.putBoolean("likes", true);
-                    if (!java.util.Objects.equals(o.getFormattedTime(), n.getFormattedTime()))
-                        payload.putBoolean("time", true);
+                    if (!java.util.Objects.equals(oldItem.getTitle(), newItem.getTitle())) payload.putBoolean("title", true);
+                    if (!java.util.Objects.equals(oldItem.getBannerUrl(), newItem.getBannerUrl())) payload.putBoolean("banner", true);
+                    if (!java.util.Objects.equals(oldItem.getDescription(), newItem.getDescription())) payload.putBoolean("desc", true);
+                    if (oldItem.getLikes() != newItem.getLikes()) payload.putBoolean("likes", true);
+                    if (!java.util.Objects.equals(oldItem.getFormattedTime(), newItem.getFormattedTime())) payload.putBoolean("time", true);
                     return payload.isEmpty() ? null : payload;
                 }
             });
-            items.clear();
-            items.addAll(newItems);
-            diff.dispatchUpdatesTo(this);
-        }
-
-        @Override
-        public int getItemCount() {
-            return items.size();
+            setHasStableIds(true);
         }
 
         @Override
         public long getItemId(int position) {
-            Event e = items.get(position);
-            return e.getEventId().hashCode();
+            Event e = getItem(position);
+            return e != null ? e.getEventId().hashCode() : androidx.recyclerview.widget.RecyclerView.NO_ID;
         }
 
-        @Override
         @NonNull
-        public FeedAdapter.VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        @Override
+        public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_feed_post, parent, false);
             return new VH(view);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull FeedAdapter.VH holder, int position) {
-            Event event = items.get(position);
-            holder.title.setText(event.getTitle());
-            holder.description.setText(event.getDescription());
-            holder.time.setText(event.getFormattedTime());
-            holder.likes.setText(String.valueOf(event.getLikes()));
-
-            // Load image using Glide or similar library
-            Glide.with(holder.banner.getContext())
-                    .load(event.getBannerUrl())
-                    .placeholder(R.drawable.ic_launcher_background)
-                    .dontAnimate() // avoid fade animations that cause flashing
-                    .into(holder.banner);
-
-            holder.btnGoing.setOnClickListener(v -> {
-                // Handle RSVP logic
-            });
-
-            holder.likeAnim.setOnClickListener(v -> {
-                // Handle like animation and logic
-            });
+        public void onBindViewHolder(@NonNull VH holder, int position) {
+            Event event = getItem(position);
+            holder.bind(event);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull FeedAdapter.VH holder, int position, @NonNull List<Object> payloads) {
+        public void onBindViewHolder(@NonNull VH holder, int position, @NonNull List<Object> payloads) {
             if (payloads.isEmpty()) {
                 onBindViewHolder(holder, position);
                 return;
             }
             Object payload = payloads.get(payloads.size() - 1);
             if (payload instanceof android.os.Bundle b) {
-                Event event = items.get(position);
+                Event event = getItem(position);
                 if (b.getBoolean("title", false)) holder.title.setText(event.getTitle());
                 if (b.getBoolean("desc", false)) holder.description.setText(event.getDescription());
                 if (b.getBoolean("time", false)) holder.time.setText(event.getFormattedTime());
-                if (b.getBoolean("likes", false))
-                    holder.likes.setText(String.valueOf(event.getLikes()));
+                if (b.getBoolean("likes", false)) holder.likes.setText(String.valueOf(event.getLikes()));
                 if (b.getBoolean("banner", false)) {
                     Glide.with(holder.banner.getContext())
                             .load(event.getBannerUrl())
@@ -606,8 +475,52 @@ public class HomeFragment extends Fragment {
                 likes = itemView.findViewById(com.example.ieeeconnect.R.id.post_likes);
                 btnGoing = itemView.findViewById(com.example.ieeeconnect.R.id.btn_going);
                 likeAnim = itemView.findViewById(com.example.ieeeconnect.R.id.like_anim);
-            }
-        }
-    }
-}
+
+                // Keep listeners lightweight and avoid re-creating heavy objects on each bind
+                btnGoing.setOnClickListener(v -> {
+                    int pos = getBindingAdapterPosition();
+                    if (pos == RecyclerView.NO_POSITION) return;
+                    androidx.recyclerview.widget.RecyclerView.Adapter<?> a = getBindingAdapter();
+                    if (!(a instanceof FeedAdapter)) return;
+                    FeedAdapter feed = (FeedAdapter) a;
+                    List<Event> list = feed.getCurrentList();
+                    if (pos < 0 || pos >= list.size()) return;
+                    Event ev = list.get(pos);
+                    if (ev == null) return;
+                    // placeholder action: show a toast
+                    Toast.makeText(itemView.getContext(), "Marked 'Going' for: " + ev.getTitle(), Toast.LENGTH_SHORT).show();
+                });
+
+                likeAnim.setOnClickListener(v -> {
+                    int pos = getBindingAdapterPosition();
+                    if (pos == RecyclerView.NO_POSITION) return;
+                    androidx.recyclerview.widget.RecyclerView.Adapter<?> a = getBindingAdapter();
+                    if (!(a instanceof FeedAdapter)) return;
+                    FeedAdapter feed = (FeedAdapter) a;
+                    List<Event> list = feed.getCurrentList();
+                    if (pos < 0 || pos >= list.size()) return;
+                    Event ev = list.get(pos);
+                    if (ev == null) return;
+                    // play animation locally and notify viewmodel to toggle like (placeholder)
+                    likeAnim.playAnimation();
+                    Toast.makeText(itemView.getContext(), "Liked: " + ev.getTitle(), Toast.LENGTH_SHORT).show();
+                });
+             }
+
+             void bind(Event event) {
+                 title.setText(event.getTitle());
+                 description.setText(event.getDescription());
+                 time.setText(event.getFormattedTime());
+                 likes.setText(String.valueOf(event.getLikes()));
+
+                 Glide.with(banner.getContext())
+                         .load(event.getBannerUrl())
+                         .placeholder(R.drawable.ic_launcher_background)
+                         .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.AUTOMATIC)
+                         .dontAnimate()
+                         .into(banner);
+             }
+         }
+     }
+ }
 

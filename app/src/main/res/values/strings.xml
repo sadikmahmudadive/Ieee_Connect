@@ -1,71 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Ieee Connect</string>
-    <string name="default_web_client_id">666484358048-eui162dnluaoetnmns0t55i0ao71ia1a.apps.googleusercontent.com</string>
+    <!-- existing project strings (preserve other entries if present) -->
+    <string name="app_name">IeeeConnect</string>
+
+    <!-- Profile fragment strings added to avoid hardcoded text -->
+    <string name="cd_cover_image">Cover image</string>
+    <string name="profile_name_default">Gwen Stacy</string>
+    <string name="profile_email_default">ex@gmail.com</string>
+    <string name="action_edit_profile">Edit Profile</string>
+    <string name="action_share_profile">Share Profile</string>
+    <string name="stat_events_attended">56</string>
+    <string name="label_events_attended">Events Attended</string>
+    <string name="stat_committee_role">Chairperson</string>
+    <string name="label_committee_branch">Main Branch</string>
+    <string name="stat_member_since">2023</string>
+    <string name="label_member_since">Member Since</string>
+    <string name="title_registered_events">Registered Events</string>
+    <string name="cd_qr">QR code</string>
+    <string name="qr_email">ex@gmail.com</string>
+    <string name="qr_description">Scan the QR code for attendance and share the profile</string>
+    <string name="action_show_qr">Show full QR</string>
+    <string name="cd_profile_image">Profile image</string>
+    <string name="cd_change_photo">Change profile photo</string>
+
+    <!-- Navigation / Admin / Home strings (placeholders) -->
     <string name="nav_home">Home</string>
     <string name="nav_events">Events</string>
     <string name="nav_chat">Chat</string>
     <string name="nav_committee">Committee</string>
-    <string name="nav_profile">Profile</string>
     <string name="nav_admin">Admin</string>
-    <string name="profile_title">Profile</string>
-    <string name="profile_subtitle">Profile and settings</string>
-    <string name="logout">Logout</string>
-    <!-- Home fragment strings -->
-    <string name="offline_banner_text">You are offline. Showing cached posts.</string>
-    <string name="fab_add_desc">Add post</string>
+    <string name="nav_profile">Profile</string>
 
-    <!-- Feed strings -->
-    <string name="post_image_desc">Feed image</string>
-    <string name="btn_interested">Interested</string>
-    <string name="btn_going">Going</string>
-    <string name="btn_not_going">Not Going</string>
-    <string name="going_count">%1$d Going</string>
-
-    <!-- Featured -->
-    <string name="featured_image_desc">Featured event image</string>
-    <string name="featured_title">Featured Event</string>
-    <string name="register_now">Register Now</string>
-
-    <!-- New menu strings -->
-    <string name="search">Search</string>
-    <string name="notifications">Notifications</string>
-
-    <!-- Admin dashboard strings -->
+    <!-- Admin dashboard and member management -->
     <string name="admin_console">Admin Console</string>
-    <string name="stat_total_members">Members: 0</string>
-    <string name="stat_active_events">Events: 0</string>
-    <string name="stat_pending_requests">Pending: 0</string>
+    <string name="admin_dashboard_stats_placeholder">No stats available</string>
     <string name="create_event">Create Event</string>
     <string name="post_announcement">Post Announcement</string>
     <string name="manage_members">Manage Members</string>
+    <string name="manage_members_header">Manage Members</string>
     <string name="approve_requests">Approve Requests</string>
     <string name="scan_attendance">Scan Attendance</string>
+    <string name="scan_attendance_qr">Scan attendance QR</string>
     <string name="broadcast_message">Broadcast Message</string>
-    <string name="manage_members_header">Manage Members</string>
-    <string name="scan_attendance_qr">Scan Attendance QR</string>
-    <string name="admin_dashboard_stats_placeholder">Stats: Members, Events, Requests</string>
+    <string name="notifications">Notifications</string>
 
-    <!-- LoginActivity strings -->
+    <!-- Home fragment misc -->
+    <string name="logo_desc">App logo</string>
+    <string name="search_desc">Search events or members</string>
+
+    <!-- Additional strings referenced by home and feed layouts -->
+    <string name="notification_desc">Notification bell</string>
+    <string name="offline_banner_text">You are offline — showing cached content</string>
+    <string name="hero_banner_desc">Join our upcoming flagship events and workshops</string>
+    <string name="fab_add_desc">Add new</string>
+    <string name="featured_image_desc">Featured event image</string>
+    <string name="featured_title">Featured</string>
+    <string name="register_now">Register Now</string>
+    <string name="post_image_desc">Post image</string>
+    <string name="btn_interested">Interested</string>
+    <string name="search">Search</string>
+
+    <!-- Missing strings referenced in LoginActivity and HomeFragment -->
     <string name="error_email_required">Email is required</string>
     <string name="error_password_required">Password is required</string>
-    <string name="signing_in">Signing in&#8230;</string>
-    <string name="log_in">Log In</string>
-
-    <!-- Custom bottom nav content descriptions (kept for backward compatibility) -->
-    <string name="home">Home</string>
-    <string name="events">Events</string>
-    <string name="chat">Chat</string>
-    <string name="committee">Committee</string>
-    <string name="profile">Profile</string>
-
-    <!-- Toolbar component strings -->
-    <string name="logo_desc">IEEE BUBT Logo</string>
-    <string name="search_desc">Search</string>
-    <string name="notification_desc">Notifications</string>
-
-    <!-- Missing strings required by fragment_home.xml -->
-    <string name="hero_banner_desc">Welcome to IEEE Connect! Stay updated with the latest events, news, and opportunities.</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="log_in">Log in</string>
     <string name="starting_now">Starting now</string>
-    <string name="feed_empty">No feed items to show. Check back later!</string>
-    <string name="feed_error">Failed to load feed. Please try again.</string>
+
 </resources>

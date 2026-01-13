@@ -3,4 +3,11 @@
     <!-- Removed MinimalBottomNavIndicator style because the app uses a custom nav implementation.
          If you need to reintroduce an active-indicator style for Material BottomNavigationView,
          restore from VCS. -->
+
+    <!-- CircleImageView style used as shapeAppearanceOverlay for ShapeableImageView -->
+    <style name="CircleImageView" parent="ShapeAppearance.Material3.Corner.None">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
 </resources>
