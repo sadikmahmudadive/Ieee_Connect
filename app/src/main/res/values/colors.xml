@@ -4,7 +4,7 @@
     <color name="purple_500">#7C3AED</color>
     <color name="md_theme_light_onPrimary">#FFFFFF</color>
 
-    <!-- Added app theme colors required by themes.xml -->
+    <!-- App theme colors -->
     <color name="primary">#7C3AED</color>
     <color name="onPrimary">#FFFFFF</color>
     <color name="primaryContainer">#E9D5FF</color>
@@ -19,7 +19,11 @@
     <color name="surfaceVariant">#F3E8FF</color>
     <color name="onSurfaceVariant">#333333</color>
 
-    <!-- Navigation icon colors (defaults for light mode) -->
+    <!-- Standard Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+
+    <!-- Navigation icon colors -->
     <color name="nav_icon_active">#386BF6</color>
     <color name="nav_icon_inactive">#94A3B8</color>
     <color name="bottom_nav_ripple_color">#228B9CFF</color>
@@ -29,6 +33,6 @@
     <color name="nav_item_inactive">#64748B</color>
     <color name="nav_item_selected_bg">#2D3B52</color>
 
-    <!-- Background for bottom navigation (light mode). Night mode overrides exist in values-night/colors.xml -->
+    <!-- Background for bottom navigation -->
     <color name="nav_background">#FFFFFFFF</color>
 </resources>

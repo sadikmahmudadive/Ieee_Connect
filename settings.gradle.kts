@@ -7,18 +7,16 @@ pluginManagement {
     resolutionStrategy {
         eachPlugin {
             if (requested.id.id == "org.jetbrains.kotlin.android") {
-                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.21")
+                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
             }
             if (requested.id.id == "org.jetbrains.kotlin.kapt") {
-                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.21")
+                useModule("org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0")
             }
         }
     }
 }
 
 plugins {
-    // Enables automatic JDK provisioning from Foojay/Adoptium if a matching toolchain is missing.
-    // Applying this plugin in settings allows Gradle to download a matching Java toolchain when needed.
     id("org.gradle.toolchains.foojay-resolver") version "0.4.0"
 }
 
@@ -27,7 +25,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // JitPack is required for some GitHub-hosted libraries like uCrop
         maven(url = "https://jitpack.io")
     }
 }

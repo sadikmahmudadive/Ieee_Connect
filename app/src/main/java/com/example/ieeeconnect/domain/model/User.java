@@ -13,7 +13,17 @@ public class User {
     @Nullable
     private String bio;
     @Nullable
-    private String photoUrl; // Cloudinary URL
+    private String photoUrl;
+    @Nullable
+    private String coverUrl;
+    @Nullable
+    private String username;
+    @Nullable
+    private String dept;
+    @Nullable
+    private String phone;
+    @Nullable
+    private String gender;
 
     // --- ADMIN FIELDS ---
     private boolean isAdmin; // true if user is admin
@@ -25,6 +35,10 @@ public class User {
         this.email = email;
         this.bio = bio;
         this.photoUrl = photoUrl;
+    }
+
+    public User() {
+        // Default constructor for Firebase
     }
 
     @NonNull
@@ -70,6 +84,51 @@ public class User {
 
     public void setPhotoUrl(@Nullable String photoUrl) {
         this.photoUrl = photoUrl;
+    }
+
+    @Nullable
+    public String getCoverUrl() {
+        return coverUrl;
+    }
+
+    public void setCoverUrl(@Nullable String coverUrl) {
+        this.coverUrl = coverUrl;
+    }
+
+    @Nullable
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(@Nullable String username) {
+        this.username = username;
+    }
+
+    @Nullable
+    public String getDept() {
+        return dept;
+    }
+
+    public void setDept(@Nullable String dept) {
+        this.dept = dept;
+    }
+
+    @Nullable
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(@Nullable String phone) {
+        this.phone = phone;
+    }
+
+    @Nullable
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(@Nullable String gender) {
+        this.gender = gender;
     }
 
     public boolean isAdmin() {

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background"
+        android:orientation="vertical">
+
+        <!-- Top Bar -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@color/surface"
+            android:paddingHorizontal="16dp">
+
+            <TextView
+                android:id="@+id/btn_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:gravity="center"
+                android:text="@string/action_cancel"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:text="@string/title_edit_profile"
+                android:textColor="@color/onSurface"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btn_done"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:gravity="center"
+                android:text="@string/action_done"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </RelativeLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:overScrollMode="never">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingVertical="24dp">
+
+                <!-- Profile Photo Section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/edit_profile_image"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:src="@drawable/ic_profile_placeholder"
+                        app:civ_border_color="@color/surfaceVariant"
+                        app:civ_border_width="2dp" />
+
+                    <TextView
+                        android:id="@+id/btn_change_photo_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="@string/action_change_photo"
+                        android:textColor="?attr/colorPrimary"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- Input Rows -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:background="@color/surface"
+                    android:orientation="vertical">
+
+                    <!-- Name Row -->
+                    <LinearLayout style="@style/EditProfileRowStyle">
+                        <TextView style="@style/EditProfileLabelStyle" android:text="@string/label_name" />
+                        <EditText android:id="@+id/et_name"
+                            style="@style/EditProfileInputStyle"
+                            android:hint="Full Name"
+                            android:textColor="@color/onSurface"
+                            android:textColorHint="@color/onSurfaceVariant" />
+                    </LinearLayout>
+                    <View style="@style/EditProfileDividerStyle" />
+
+                    <!-- Username Row (Locked) -->
+                    <LinearLayout style="@style/EditProfileRowStyle">
+                        <TextView style="@style/EditProfileLabelStyle" android:text="@string/label_username" />
+                        <EditText
+                            android:id="@+id/et_username"
+                            style="@style/EditProfileInputStyle"
+                            android:hint="username"
+                            android:enabled="false"
+                            android:focusable="false"
+                            android:clickable="false"
+                            android:textColor="@color/onSurfaceVariant" />
+                    </LinearLayout>
+                    <View style="@style/EditProfileDividerStyle" />
+
+                    <!-- Role Row (Locked) -->
+                    <LinearLayout style="@style/EditProfileRowStyle">
+                        <TextView style="@style/EditProfileLabelStyle" android:text="@string/label_role" />
+                        <EditText
+                            android:id="@+id/et_role"
+                            style="@style/EditProfileInputStyle"
+                            android:hint="Role"
+                            android:enabled="false"
+                            android:focusable="false"
+                            android:clickable="false"
+                            android:textColor="@color/onSurfaceVariant" />
+                    </LinearLayout>
+                    <View style="@style/EditProfileDividerStyle" />
+
+                    <!-- Dept Row -->
+                    <LinearLayout style="@style/EditProfileRowStyle">
+                        <TextView style="@style/EditProfileLabelStyle" android:text="@string/label_dept" />
+                        <EditText android:id="@+id/et_dept"
+                            style="@style/EditProfileInputStyle"
+                            android:hint="e.g. CSE"
+                            android:textColor="@color/onSurface"
+                            android:textColorHint="@color/onSurfaceVariant" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- Private Info Header -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/label_private_info"
+                    android:textColor="@color/onSurfaceVariant"
+                    android:textSize="14sp" />
+
+                <!-- Private Info Section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/surface"
+                    android:orientation="vertical">
+
+                    <!-- Email Row (Locked) -->
+                    <LinearLayout style="@style/EditProfileRowStyle">
+                        <TextView style="@style/EditProfileLabelStyle" android:text="@string/label_email" />
+                        <EditText
+                            android:id="@+id/et_email"
+                            style="@style/EditProfileInputStyle"
+                            android:enabled="false"
+                            android:focusable="false"
+                            android:clickable="false"
+                            android:textColor="@color/onSurfaceVariant" />
+                    </LinearLayout>
+                    <View style="@style/EditProfileDividerStyle" />
+
+                    <!-- Phone Row -->
+                    <LinearLayout style="@style/EditProfileRowStyle">
+                        <TextView style="@style/EditProfileLabelStyle" android:text="@string/label_phone" />
+                        <EditText android:id="@+id/et_phone"
+                            style="@style/EditProfileInputStyle"
+                            android:inputType="phone"
+                            android:hint="+91 0000000000"
+                            android:textColor="@color/onSurface"
+                            android:textColorHint="@color/onSurfaceVariant" />
+                    </LinearLayout>
+                    <View style="@style/EditProfileDividerStyle" />
+
+                    <!-- Gender Row -->
+                    <LinearLayout style="@style/EditProfileRowStyle">
+                        <TextView style="@style/EditProfileLabelStyle" android:text="@string/label_gender" />
+                        <EditText android:id="@+id/et_gender"
+                            style="@style/EditProfileInputStyle"
+                            android:hint="Male / Female / Other"
+                            android:textColor="@color/onSurface"
+                            android:textColorHint="@color/onSurfaceVariant" />
+                    </LinearLayout>
+                </LinearLayout>
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+</layout>

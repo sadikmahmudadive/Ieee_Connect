@@ -3,11 +3,11 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="@color/background">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:padding="24dp">
 
         <TextView
@@ -15,16 +15,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Welcome back!"
-            android:textSize="22sp"
+            android:textSize="24sp"
             android:textStyle="bold"
-            android:textColor="#1A1A1A"
+            android:textColor="@color/onSurface"
             android:gravity="center"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/socialRow"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintVertical_bias="0.2" />
+            android:layout_marginTop="48dp" />
 
         <TextView
             android:id="@+id/subheading"
@@ -32,9 +30,9 @@
             android:layout_height="wrap_content"
             android:text="We're excited to see you again!"
             android:textSize="14sp"
-            android:textColor="#6B7280"
+            android:textColor="@color/onSurfaceVariant"
             android:gravity="center"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@id/heading"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -46,8 +44,8 @@
             android:text="Account Information"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#1A1A1A"
-            android:layout_marginTop="32dp"
+            android:textColor="@color/onSurface"
+            android:layout_marginTop="40dp"
             app:layout_constraintTop_toBottomOf="@id/subheading"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -75,7 +73,7 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             app:endIconMode="password_toggle"
             app:layout_constraintTop_toBottomOf="@id/emailLayout"
             app:layout_constraintStart_toStartOf="parent"
@@ -94,9 +92,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Forgot your password?"
-            android:layout_marginTop="6dp"
-            android:textColor="@color/ieee_primary"
-            android:textSize="12sp"
+            android:layout_marginTop="8dp"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="13sp"
             app:layout_constraintTop_toBottomOf="@id/passwordLayout"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -104,57 +102,61 @@
             android:id="@+id/loginButton"
             style="@style/Widget.Material3.Button"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="24dp"
             android:text="Log In"
             android:textStyle="bold"
             android:textAllCaps="false"
-            android:backgroundTint="#3D4FFC"
-            app:cornerRadius="8dp"
+            android:backgroundTint="?attr/colorPrimary"
+            app:cornerRadius="12dp"
             app:layout_constraintTop_toBottomOf="@id/forgotPassword"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-        <TextView
-            android:id="@+id/signupRow"
+        <LinearLayout
+            android:id="@+id/signupContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Don't have an account? "
-            android:textColor="#6B7280"
-            android:textSize="12sp"
-            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="16dp"
             app:layout_constraintTop_toBottomOf="@id/loginButton"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <TextView
-            android:id="@+id/signupLink"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Signup"
-            android:textColor="#3D4FFC"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:layout_constraintBaseline_toBaselineOf="@id/signupRow"
-            app:layout_constraintStart_toEndOf="@id/signupRow" />
+            <TextView
+                android:id="@+id/signupRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Don't have an account? "
+                android:textColor="@color/onSurfaceVariant"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/signupLink"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Signup"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <View
             android:id="@+id/dividerLeft"
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:background="#E5E7EB"
-            android:layout_marginTop="20dp"
-            app:layout_constraintTop_toBottomOf="@id/signupRow"
+            android:background="@color/surfaceVariant"
+            android:layout_marginTop="32dp"
+            app:layout_constraintTop_toBottomOf="@id/signupContainer"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/continueText"
-            app:layout_constraintHorizontal_weight="1" />
+            app:layout_constraintEnd_toStartOf="@id/continueText" />
 
         <TextView
             android:id="@+id/continueText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="or continue with"
-            android:textColor="#9CA3AF"
+            android:textColor="@color/onSurfaceVariant"
             android:textSize="12sp"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
@@ -167,12 +169,11 @@
             android:id="@+id/dividerRight"
             android:layout_width="0dp"
             android:layout_height="1dp"
-            android:background="#E5E7EB"
+            android:background="@color/surfaceVariant"
             app:layout_constraintTop_toTopOf="@id/dividerLeft"
             app:layout_constraintBottom_toBottomOf="@id/dividerLeft"
             app:layout_constraintStart_toEndOf="@id/continueText"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_weight="1" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <LinearLayout
             android:id="@+id/socialRow"
@@ -180,35 +181,38 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/dividerLeft"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="32dp"
+            app:layout_constraintTop_toBottomOf="@id/continueText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintVertical_bias="0.95">
+            app:layout_constraintBottom_toBottomOf="parent">
 
             <ImageButton
                 android:id="@+id/btnFacebook"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:src="@drawable/ic_social_facebook"
-                android:background="@android:color/transparent" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Facebook" />
 
             <ImageButton
                 android:id="@+id/btnApple"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="12dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="16dp"
                 android:src="@drawable/ic_social_apple"
-                android:background="@android:color/transparent" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Apple" />
 
             <ImageButton
                 android:id="@+id/googleButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="12dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="16dp"
                 android:src="@drawable/ic_social_google"
-                android:background="@android:color/transparent"/>
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Google" />
 
         </LinearLayout>
 

@@ -65,6 +65,9 @@
             android:name=".activities.EditEventActivity"
             android:exported="false" />
         <activity
+            android:name=".activities.EditProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.events.EventDetailActivity"
             android:exported="false" />
         <activity

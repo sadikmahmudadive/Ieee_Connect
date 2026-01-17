@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- existing project strings (preserve other entries if present) -->
+    <!-- existing project strings -->
     <string name="app_name">IeeeConnect</string>
 
-    <!-- Profile fragment strings added to avoid hardcoded text -->
+    <!-- Profile fragment strings -->
     <string name="cd_cover_image">Cover image</string>
     <string name="profile_name_default">Gwen Stacy</string>
+    <string name="profile_username_default">@gwen_stacy</string>
     <string name="profile_email_default">ex@gmail.com</string>
     <string name="action_edit_profile">Edit Profile</string>
     <string name="action_share_profile">Share Profile</string>
@@ -22,8 +23,30 @@
     <string name="action_show_qr">Show full QR</string>
     <string name="cd_profile_image">Profile image</string>
     <string name="cd_change_photo">Change profile photo</string>
+    <string name="label_attendance">Attendance</string>
+    <string name="chart_placeholder">(chart placeholder)</string>
+    <string name="label_achievements">Achievements</string>
+    <string name="achievement_desc_1">Achievement 1</string>
+    <string name="achievement_desc_2">Achievement 2</string>
+    <string name="achievement_desc_3">Achievement 3</string>
+    <string name="more_achievements">+53</string>
+    <string name="action_close">Close</string>
 
-    <!-- Navigation / Admin / Home strings (placeholders) -->
+    <!-- Edit Profile strings -->
+    <string name="title_edit_profile">Edit profile</string>
+    <string name="action_done">Done</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_change_photo">Change Profile Photo</string>
+    <string name="label_name">Name</string>
+    <string name="label_username">Username</string>
+    <string name="label_role">Role</string>
+    <string name="label_dept">Dept</string>
+    <string name="label_private_info">Private Information</string>
+    <string name="label_email">Email</string>
+    <string name="label_phone">Phone</string>
+    <string name="label_gender">Gender</string>
+
+    <!-- Navigation / Admin / Home strings -->
     <string name="nav_home">Home</string>
     <string name="nav_events">Events</string>
     <string name="nav_chat">Chat</string>
@@ -47,8 +70,6 @@
     <!-- Home fragment misc -->
     <string name="logo_desc">App logo</string>
     <string name="search_desc">Search events or members</string>
-
-    <!-- Additional strings referenced by home and feed layouts -->
     <string name="notification_desc">Notification bell</string>
     <string name="offline_banner_text">You are offline — showing cached content</string>
     <string name="hero_banner_desc">Join our upcoming flagship events and workshops</string>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorSurface"
+    android:background="@color/background"
     tools:context="com.example.ieeeconnect.ui.home.HomeFragment">
 
     <!-- Top app bar / toolbar -->
@@ -15,7 +15,7 @@
         android:theme="@style/ThemeOverlay.Material3.ActionBar"
         app:title=""
         app:titleCentered="false"
-        android:background="?attr/colorSurface"
+        android:background="@color/surface"
         android:elevation="4dp"
         android:paddingTop="16dp"
         android:paddingBottom="0dp">
@@ -39,7 +39,8 @@
             android:contentDescription="@string/search_desc"
             android:padding="8dp"
             android:layout_marginEnd="16dp"
-            android:src="@drawable/ic_search" />
+            android:src="@drawable/ic_search"
+            app:tint="@color/onSurfaceVariant" />
 
         <!-- Notification Icon -->
         <ImageView
@@ -49,7 +50,8 @@
             android:layout_gravity="end"
             android:contentDescription="@string/notification_desc"
             android:padding="8dp"
-            android:src="@drawable/ic_notifications" />
+            android:src="@drawable/ic_notifications"
+            app:tint="@color/onSurfaceVariant" />
     </com.google.android.material.appbar.MaterialToolbar>
 
     <!-- Offline indicator -->
@@ -72,14 +74,13 @@
         android:layout_height="match_parent"
         android:layout_marginTop="0dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:layout_below="@id/top_app_bar"
         tools:ignore="MissingClass">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="?attr/colorSurface"
+            android:background="@color/background"
             android:paddingTop="8dp"
             android:paddingBottom="0dp">
 
@@ -100,7 +101,7 @@
                     android:scaleType="centerCrop"
                     android:contentDescription="@string/hero_banner_desc"
                     android:src="@drawable/ic_launcher_background"
-                    android:background="?attr/colorSurface" />
+                    android:background="@color/surfaceVariant" />
 
                 <!-- Gradient overlay for text readability -->
                 <View
@@ -121,14 +122,14 @@
                         android:layout_height="wrap_content"
                         android:text="Example"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-                        android:textColor="@android:color/white" />
+                        android:textColor="#FFFFFF" />
 
                     <TextView
                         android:id="@+id/hero_countdown"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Starts in 00:00:00"
-                        android:textColor="@android:color/white"
+                        android:textColor="#FFFFFF"
                         android:layout_marginTop="6dp" />
 
                     <com.google.android.material.button.MaterialButton
@@ -140,8 +141,8 @@
                         android:layout_marginTop="8dp"
                         app:cornerRadius="20dp"
                         app:iconGravity="textStart"
-                        android:backgroundTint="@color/purple_500"
-                        android:textColor="@android:color/white" />
+                        android:backgroundTint="?attr/colorPrimary"
+                        android:textColor="@color/white" />
 
                 </LinearLayout>
             </FrameLayout>
@@ -153,7 +154,7 @@
                 android:layout_height="160dp"
                 android:layout_marginTop="8dp"
                 android:layout_marginBottom="8dp"
-                android:background="?attr/colorSurface"
+                android:background="@color/background"
                 android:clipToPadding="false"
                 android:orientation="horizontal"
                 android:overScrollMode="never"
@@ -167,14 +168,14 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:layout_marginTop="8dp"
-                android:background="?attr/colorSurface"
+                android:background="@color/background"
                 app:shimmer_auto_start="true">
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="?attr/colorSurface"
+                    android:background="@color/background"
                     android:clipToPadding="false"
                     android:paddingTop="8dp"
                     android:paddingBottom="80dp"
@@ -189,6 +190,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="16dp"
                 android:text="Categories"
+                android:textColor="@color/onSurface"
                 android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
                 android:gravity="center"
                 android:visibility="visible" />
@@ -201,6 +203,7 @@
                 android:gravity="center"
                 android:padding="16dp"
                 android:text="No events to display."
+                android:textColor="@color/onSurfaceVariant"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
                 android:visibility="gone" />
 

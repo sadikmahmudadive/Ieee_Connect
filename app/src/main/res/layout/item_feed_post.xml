@@ -4,8 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="?attr/colorSurface">
 
     <LinearLayout
         android:orientation="vertical"
@@ -38,6 +39,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                    android:textColor="@color/onSurface"
+                    android:textStyle="bold"
                     android:text="Author Name" />
 
                 <TextView
@@ -45,15 +48,19 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-                    android:textColor="?android:attr/textColorSecondary"
+                    android:textColor="@color/onSurfaceVariant"
                     android:text="Role" />
             </LinearLayout>
 
         </LinearLayout>
 
-        <FrameLayout
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
-            android:layout_height="200dp">
+            android:layout_height="200dp"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
 
             <ImageView
                 android:id="@+id/post_image"
@@ -74,13 +81,15 @@
                 app:lottie_autoPlay="false"
                 app:lottie_loop="false" />
 
-        </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:id="@+id/post_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/onSurface"
+            android:textStyle="bold"
             android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall" />
 
         <TextView
@@ -88,6 +97,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:textColor="@color/onSurfaceVariant"
             android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
             android:maxLines="3"
             android:ellipsize="end" />
@@ -97,27 +107,32 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginTop="8dp">
+            android:layout_marginTop="12dp">
 
             <TextView
                 android:id="@+id/post_time"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:textColor="@color/onSurfaceVariant"
                 android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
 
             <TextView
                 android:id="@+id/post_likes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="12dp"
+                android:textColor="@color/onSurfaceVariant"
                 android:textAppearance="@style/TextAppearance.Material3.BodySmall" />
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_going"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/btn_interested" />
+                android:text="@string/btn_interested"
+                android:textAllCaps="false"
+                app:cornerRadius="8dp" />
         </LinearLayout>
 
     </LinearLayout>
