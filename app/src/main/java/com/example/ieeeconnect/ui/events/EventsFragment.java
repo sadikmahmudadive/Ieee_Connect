@@ -25,7 +25,7 @@ public class EventsFragment extends Fragment {
     private EventsViewModel viewModel;
 
     private EventsAdapter.OnRsvpActionListener rsvpListener = (event, rsvpStatus, position) -> {
-        // TODO: Implement RSVP logic
+        // RSVP logic handled in adapter/viewmodel
     };
 
     @Nullable
@@ -43,9 +43,20 @@ public class EventsFragment extends Fragment {
         binding.recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recycler.setAdapter(adapter);
 
-        viewModel = new ViewModelProvider(this).get(EventsViewModel.class);
+        // USE ACTIVITY SCOPE to stay in sync with HomeFragment
+        viewModel = new ViewModelProvider(requireActivity()).get(EventsViewModel.class);
+        
+        // Observe events and handle empty states explicitly
         viewModel.getAllEvents().observe(getViewLifecycleOwner(), events -> {
-            adapter.submitList(events);
+            if (events == null || events.isEmpty()) {
+                binding.recycler.setVisibility(View.GONE);
+                if (binding.emptyStateText != null) binding.emptyStateText.setVisibility(View.VISIBLE);
+                adapter.submitList(new ArrayList<>()); // Force clear adapter
+            } else {
+                binding.recycler.setVisibility(View.VISIBLE);
+                if (binding.emptyStateText != null) binding.emptyStateText.setVisibility(View.GONE);
+                adapter.submitList(new ArrayList<>(events));
+            }
         });
 
         binding.fabCreateEvent.setOnClickListener(v -> {
@@ -56,7 +67,6 @@ public class EventsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // Auto-reload events when fragment is resumed
         if (viewModel != null) {
             viewModel.refreshFromNetwork();
         }

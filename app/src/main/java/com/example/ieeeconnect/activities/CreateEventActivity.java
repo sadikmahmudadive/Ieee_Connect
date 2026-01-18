@@ -6,10 +6,12 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -22,9 +24,12 @@ import com.cloudinary.android.callback.UploadCallback;
 import com.example.ieeeconnect.data.remote.CloudinaryManager;
 import com.example.ieeeconnect.databinding.ActivityCreateEventBinding;
 import com.example.ieeeconnect.domain.model.Event;
+import com.example.ieeeconnect.util.ImageUtils;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -178,31 +183,79 @@ public class CreateEventActivity extends AppCompatActivity {
     }
 
     private void uploadToCloudinary(Uri imageUri) {
-        CloudinaryManager.upload(imageUri, new UploadCallback() {
-            @Override
-            public void onStart(String requestId) {
-                // Show progress
+        // Resize locally first
+        try {
+            Bitmap original = ImageUtils.getBitmapFromUri(this, imageUri);
+            if (original == null) return;
+            Bitmap resized = ImageUtils.scaleDownBitmap(original, 1024);
+            Uri uploadUri = ImageUtils.writeBitmapToCacheAndGetUri(this, resized, "event_banner_upload.jpg");
+            if (uploadUri == null) {
+                Toast.makeText(this, "Failed to prepare image for upload", Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            @Override
-            public void onProgress(String requestId, long bytes, long totalBytes) {
-                // Show progress
-            }
+            // show progress overlay
+            binding.bannerProgressContainer.setVisibility(View.VISIBLE);
+            binding.bannerProgressBar.setProgress(0);
+            binding.bannerProgressText.setText("0%");
+            binding.uploadBannerButton.setEnabled(false);
 
-            @Override
-            public void onSuccess(String requestId, Map resultData) {
-                bannerUrl = (String) resultData.get("url");
-            }
+            CloudinaryManager.upload(uploadUri, new UploadCallback() {
+                @Override
+                public void onStart(String requestId) {
+                    // started
+                }
 
-            @Override
-            public void onError(String requestId, ErrorInfo error) {
-                Toast.makeText(CreateEventActivity.this, "Upload failed: " + error.getDescription(), Toast.LENGTH_SHORT).show();
-            }
+                @Override
+                public void onProgress(String requestId, long bytes, long totalBytes) {
+                    try {
+                        int percent = (int) ((bytes * 100) / (totalBytes == 0 ? 1 : totalBytes));
+                        runOnUiThread(() -> {
+                            binding.bannerProgressBar.setIndeterminate(false);
+                            binding.bannerProgressBar.setProgress(percent);
+                            binding.bannerProgressText.setText(percent + "%");
+                        });
+                    } catch (Exception ignored) {}
+                }
 
-            @Override
-            public void onReschedule(String requestId, ErrorInfo error) {
-                // Reschedule
-            }
-        });
+                @Override
+                public void onSuccess(String requestId, Map resultData) {
+                    Object urlObj = resultData != null ? resultData.get("secure_url") : null;
+                    final String url = urlObj != null ? urlObj.toString() : (resultData != null ? String.valueOf(resultData.get("url")) : null);
+                    bannerUrl = url;
+                    runOnUiThread(() -> {
+                        if (url != null) {
+                            binding.eventBanner.setImageURI(null);
+                            com.bumptech.glide.Glide.with(CreateEventActivity.this).load(url).into(binding.eventBanner);
+                        }
+                        binding.bannerProgressContainer.setVisibility(View.GONE);
+                        binding.uploadBannerButton.setEnabled(true);
+                    });
+
+                    // cleanup temp file
+                    try {
+                        File f = new File(uploadUri.getPath());
+                        if (f.exists()) f.delete();
+                    } catch (Exception ignored) {}
+                }
+
+                @Override
+                public void onError(String requestId, ErrorInfo error) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(CreateEventActivity.this, "Upload failed: " + error.getDescription(), Toast.LENGTH_SHORT).show();
+                        binding.bannerProgressContainer.setVisibility(View.GONE);
+                        binding.uploadBannerButton.setEnabled(true);
+                    });
+                }
+
+                @Override
+                public void onReschedule(String requestId, ErrorInfo error) {
+                    // handle retry
+                }
+            });
+
+        } catch (IOException e) {
+            Toast.makeText(this, "Failed to prepare image for upload", Toast.LENGTH_SHORT).show();
+        }
     }
 }

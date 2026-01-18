@@ -6,6 +6,7 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,8 +23,11 @@ import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.example.ieeeconnect.data.remote.CloudinaryManager;
 import com.example.ieeeconnect.databinding.ActivityEditEventBinding;
+import com.example.ieeeconnect.util.ImageUtils;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -213,46 +217,74 @@ public class EditEventActivity extends AppCompatActivity {
         binding.uploadBannerButton.setEnabled(false);
         binding.uploadBannerButton.setText("Uploading...");
 
-        CloudinaryManager.upload(imageUri, new UploadCallback() {
-            @Override
-            public void onStart(String requestId) {
-                // Upload started
+        // Resize locally first
+        try {
+            Bitmap original = ImageUtils.getBitmapFromUri(this, imageUri);
+            if (original == null) return;
+            Bitmap resized = ImageUtils.scaleDownBitmap(original, 1024);
+            Uri uploadUri = ImageUtils.writeBitmapToCacheAndGetUri(this, resized, "edit_event_banner_upload.jpg");
+            if (uploadUri == null) {
+                Toast.makeText(this, "Failed to prepare image for upload", Toast.LENGTH_SHORT).show();
+                binding.uploadBannerButton.setEnabled(true);
+                binding.uploadBannerButton.setText("Change Banner");
+                isUploadingNewBanner = false;
+                return;
             }
 
-            @Override
-            public void onProgress(String requestId, long bytes, long totalBytes) {
-                // Track progress if needed
-            }
-
-            @Override
-            public void onSuccess(String requestId, Map resultData) {
-                bannerUrl = (String) resultData.get("secure_url");
-                if (bannerUrl == null || bannerUrl.isEmpty()) {
-                    bannerUrl = (String) resultData.get("url");
+            // show a simple progress by setting content description or use toast; for brevity we'll keep button text and restore later
+            CloudinaryManager.upload(uploadUri, new UploadCallback() {
+                @Override
+                public void onStart(String requestId) {
                 }
-                runOnUiThread(() -> {
-                    Toast.makeText(EditEventActivity.this, "Banner uploaded successfully", Toast.LENGTH_SHORT).show();
-                    binding.uploadBannerButton.setEnabled(true);
-                    binding.uploadBannerButton.setText("Change Banner");
-                    isUploadingNewBanner = false;
-                });
-            }
 
-            @Override
-            public void onError(String requestId, ErrorInfo error) {
-                runOnUiThread(() -> {
-                    Toast.makeText(EditEventActivity.this, "Upload failed: " + error.getDescription(), Toast.LENGTH_SHORT).show();
-                    binding.uploadBannerButton.setEnabled(true);
-                    binding.uploadBannerButton.setText("Upload Banner");
-                    isUploadingNewBanner = false;
-                });
-            }
+                @Override
+                public void onProgress(String requestId, long bytes, long totalBytes) {
+                    try {
+                        int percent = (int) ((bytes * 100) / (totalBytes == 0 ? 1 : totalBytes));
+                        runOnUiThread(() -> binding.uploadBannerButton.setText("Uploading... " + percent + "%"));
+                    } catch (Exception ignored) {}
+                }
 
-            @Override
-            public void onReschedule(String requestId, ErrorInfo error) {
-                // Handle reschedule if needed
-            }
-        });
+                @Override
+                public void onSuccess(String requestId, Map resultData) {
+                    final String url = resultData != null ? (String) resultData.get("secure_url") : null;
+                    final String finalUrl = url == null ? (resultData != null ? (String) resultData.get("url") : null) : url;
+                    bannerUrl = finalUrl;
+                    runOnUiThread(() -> {
+                        Toast.makeText(EditEventActivity.this, "Banner uploaded successfully", Toast.LENGTH_SHORT).show();
+                        binding.uploadBannerButton.setEnabled(true);
+                        binding.uploadBannerButton.setText("Change Banner");
+                        isUploadingNewBanner = false;
+                        if (finalUrl != null) Glide.with(EditEventActivity.this).load(finalUrl).into(binding.eventBanner);
+                    });
+
+                    try {
+                        File f = new File(uploadUri.getPath());
+                        if (f.exists()) f.delete();
+                    } catch (Exception ignored) {}
+                }
+
+                @Override
+                public void onError(String requestId, ErrorInfo error) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(EditEventActivity.this, "Upload failed: " + error.getDescription(), Toast.LENGTH_SHORT).show();
+                        binding.uploadBannerButton.setEnabled(true);
+                        binding.uploadBannerButton.setText("Upload Banner");
+                        isUploadingNewBanner = false;
+                    });
+                }
+
+                @Override
+                public void onReschedule(String requestId, ErrorInfo error) {
+                }
+            });
+
+        } catch (IOException e) {
+            Toast.makeText(this, "Failed to prepare image for upload", Toast.LENGTH_SHORT).show();
+            binding.uploadBannerButton.setEnabled(true);
+            binding.uploadBannerButton.setText("Change Banner");
+            isUploadingNewBanner = false;
+        }
     }
 
     private void updateEvent() {
@@ -300,4 +332,3 @@ public class EditEventActivity extends AppCompatActivity {
                 });
     }
 }
-

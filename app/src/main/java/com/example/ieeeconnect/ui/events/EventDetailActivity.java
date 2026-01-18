@@ -4,9 +4,9 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.provider.CalendarContract;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,20 +19,24 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.util.Pair;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
 import com.example.ieeeconnect.R;
 import com.example.ieeeconnect.domain.model.Event;
+import com.example.ieeeconnect.viewmodels.EventsViewModel;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 public class EventDetailActivity extends AppCompatActivity {
-    public static final String EXTRA_EVENT = "event";
-
+    public static final String EXTRA_EVENT_ID = "eventId";
     private static final String TAG = "EventDetailActivity";
 
     private ImageView bannerImage;
@@ -40,25 +44,35 @@ public class EventDetailActivity extends AppCompatActivity {
     private TextView descriptionText;
     private TextView timeText;
     private TextView locationText;
-    private Button goingButton;
-    private Button interestedButton;
-    private Button notGoingButton;
-    private Button addToCalendarButton;
+    private MaterialButton goingButton;
+    private MaterialButton interestedButton;
+    private MaterialButton notGoingButton;
+    private MaterialButton addToCalendarButton;
     private MaterialButton deleteEventButton;
     private MaterialButton editEventButton;
     private CollapsingToolbarLayout collapsingToolbar;
+    
+    private EventsViewModel viewModel;
     private Event currentEvent;
     private String eventId;
+
+    public static void startWithTransition(AppCompatActivity activity, View sourceImage, String eventId) {
+        Intent intent = new Intent(activity, EventDetailActivity.class);
+        intent.putExtra(EXTRA_EVENT_ID, eventId);
+        
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                activity,
+                sourceImage,
+                "eventBannerTransition"
+        );
+        activity.startActivity(intent, options.toBundle());
+    }
 
     private final ActivityResultLauncher<Intent> editEventLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             (ActivityResult result) -> {
                 if (result.getResultCode() == Activity.RESULT_OK) {
-                    // Reload event details when returning from edit
-                    if (eventId != null) {
-                        loadEventDetails();
-                        Toast.makeText(this, "Event updated, reloading...", Toast.LENGTH_SHORT).show();
-                    }
+                    loadEventDetails();
                 }
             }
     );
@@ -68,6 +82,21 @@ public class EventDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
 
+        initViews();
+        viewModel = new ViewModelProvider(this).get(EventsViewModel.class);
+
+        handleIntent(getIntent());
+
+        if (eventId != null) {
+            loadEventDetails();
+            observeEventChanges();
+        } else {
+            Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+            finish();
+        }
+    }
+
+    private void initViews() {
         bannerImage = findViewById(R.id.bannerImage);
         titleText = findViewById(R.id.titleText);
         descriptionText = findViewById(R.id.descriptionText);
@@ -80,251 +109,168 @@ public class EventDetailActivity extends AppCompatActivity {
         deleteEventButton = findViewById(R.id.deleteEventButton);
         editEventButton = findViewById(R.id.editEventButton);
         collapsingToolbar = findViewById(R.id.collapsingToolbar);
-
-        // Robustly extract event identifier or object from intent
-        Intent intent = getIntent();
-        if (intent != null) {
-            // Primary: EXTRA_EVENT (legacy in this codebase uses key "event")
-            String id = intent.getStringExtra(EXTRA_EVENT);
-            if (id == null) {
-                // Secondary: many places use key "eventId"
-                id = intent.getStringExtra("eventId");
-            }
-
-            if (id != null) {
-                eventId = id;
-            } else {
-                // Third: some older code may pass a full Event object (serialized)
-                try {
-                    Object obj = intent.getSerializableExtra("event");
-                    if (obj instanceof Event) {
-                        currentEvent = (Event) obj;
-                        // ensure eventId is set from object if present
-                        if (currentEvent.getEventId() != null && !currentEvent.getEventId().isEmpty()) {
-                            eventId = currentEvent.getEventId();
-                        }
-                    }
-                } catch (Exception e) {
-                    Log.d(TAG, "No serializable event found in intent", e);
-                }
-            }
-        }
-
-        // If we have an Event object already, show it immediately; otherwise fetch from Firestore using eventId
-        if (currentEvent != null) {
-            displayEventDetails();
-        } else if (eventId != null) {
-            loadEventDetails();
-        } else {
-            // Still no identifier found - show a helpful message and finish
-            Toast.makeText(this, "Event identifier missing", Toast.LENGTH_SHORT).show();
-            finish();
-        }
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        // Auto-reload event details when activity is resumed
-        if (eventId != null) {
-            loadEventDetails();
+    private void handleIntent(Intent intent) {
+        if (intent == null) return;
+        eventId = intent.getStringExtra(EXTRA_EVENT_ID);
+        // Fallback for older intent structures if any
+        if (eventId == null) {
+            eventId = intent.getStringExtra("event");
         }
     }
 
     private void loadEventDetails() {
-        // Show loading state
-        if (collapsingToolbar != null) collapsingToolbar.setTitle("Loading...");
-
-        if (eventId == null) {
-            Toast.makeText(this, "Invalid event id", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        // Fetch event from Firestore
+        if (eventId == null) return;
+        
         FirebaseFirestore.getInstance().collection("events").document(eventId)
                 .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        Event fetched = documentSnapshot.toObject(Event.class);
-                        if (fetched != null) {
-                            currentEvent = fetched;
-                            currentEvent.setEventId(documentSnapshot.getId());
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        currentEvent = doc.toObject(Event.class);
+                        if (currentEvent != null) {
+                            currentEvent.setEventId(doc.getId());
                             displayEventDetails();
-                        } else {
-                            Toast.makeText(this, "Failed to load event", Toast.LENGTH_SHORT).show();
-                            finish();
                         }
                     } else {
-                        Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Event no longer exists", Toast.LENGTH_SHORT).show();
                         finish();
                     }
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Error loading event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    finish();
-                });
+                .addOnFailureListener(e -> Log.e(TAG, "Error loading event", e));
+    }
+
+    private void observeEventChanges() {
+        viewModel.getAllEvents().observe(this, events -> {
+            if (events == null) return;
+            for (Event e : events) {
+                if (e.getEventId().equals(eventId)) {
+                    currentEvent = e;
+                    updateRsvpButtons();
+                    break;
+                }
+            }
+        });
     }
 
     private void displayEventDetails() {
         if (currentEvent == null) return;
 
-        titleText.setText(currentEvent.getTitle() != null ? currentEvent.getTitle() : "Untitled Event");
-        descriptionText.setText(currentEvent.getDescription() != null ? currentEvent.getDescription() : "");
+        titleText.setText(currentEvent.getTitle());
+        descriptionText.setText(currentEvent.getDescription());
         timeText.setText(formatEventTime(currentEvent.getStartTime(), currentEvent.getEndTime()));
-
-        // Display location if available, otherwise hide the TextView
-        String location = null;
-        try { location = currentEvent.getLocationName(); } catch (Exception ignored) {}
-        if (location != null && !location.trim().isEmpty()) {
-            locationText.setText(location);
+        
+        if (!TextUtils.isEmpty(currentEvent.getLocationName())) {
+            locationText.setText(currentEvent.getLocationName());
             locationText.setVisibility(View.VISIBLE);
         } else {
             locationText.setVisibility(View.GONE);
         }
 
         if (collapsingToolbar != null) collapsingToolbar.setTitle(currentEvent.getTitle());
-        Glide.with(this).load(currentEvent.getBannerUrl()).into(bannerImage);
+        
+        Glide.with(this)
+                .load(currentEvent.getBannerUrl())
+                .placeholder(R.drawable.ic_launcher_background)
+                .into(bannerImage);
 
-        addToCalendarButton.setOnClickListener(v -> {
-            if (currentEvent == null) return;
-            Intent cal = new Intent(Intent.ACTION_INSERT)
-                    .setData(CalendarContract.Events.CONTENT_URI)
-                    .putExtra(CalendarContract.Events.TITLE, currentEvent.getTitle())
-                    .putExtra(CalendarContract.Events.DESCRIPTION, currentEvent.getDescription())
-                    .putExtra(CalendarContract.Events.EVENT_LOCATION, currentEvent.getLocationName() != null ? currentEvent.getLocationName() : "")
-                    .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, currentEvent.getStartTime())
-                    .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, currentEvent.getEndTime())
-                    .putExtra(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().getID());
-            startActivity(cal);
-        });
-
-        // Check if user is admin and show delete button
-        checkAdminStatusAndShowDeleteButton();
-
-        deleteEventButton.setOnClickListener(v -> showDeleteConfirmationDialog());
-        editEventButton.setOnClickListener(v -> editEvent());
+        setupClickListeners();
+        updateRsvpButtons();
+        checkAdminPermissions();
     }
 
-    private void checkAdminStatusAndShowDeleteButton() {
-        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
-            if (deleteEventButton != null) deleteEventButton.setVisibility(View.GONE);
-            if (editEventButton != null) editEventButton.setVisibility(View.GONE);
-            return;
-        }
+    private void setupClickListeners() {
+        String userId = FirebaseAuth.getInstance().getUid();
+        
+        goingButton.setOnClickListener(v -> {
+            if (userId != null) viewModel.toggleGoing(eventId, userId);
+        });
 
-        String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        interestedButton.setOnClickListener(v -> {
+            if (userId != null) viewModel.toggleInterested(eventId, userId);
+        });
+
+        notGoingButton.setOnClickListener(v -> {
+            Toast.makeText(this, "Selection saved", Toast.LENGTH_SHORT).show();
+        });
+
+        addToCalendarButton.setOnClickListener(v -> addToCalendar());
+        editEventButton.setOnClickListener(v -> editEvent());
+        deleteEventButton.setOnClickListener(v -> showDeleteConfirmation());
+    }
+
+    private void updateRsvpButtons() {
+        if (currentEvent == null) return;
+        String userId = FirebaseAuth.getInstance().getUid();
+        if (userId == null) return;
+
+        boolean isGoing = currentEvent.getGoingUserIds().contains(userId);
+        boolean isInterested = currentEvent.getInterestedUserIds().contains(userId);
+
+        // Visual feedback for selection
+        goingButton.setAlpha(isGoing ? 1.0f : 0.6f);
+        goingButton.setStrokeWidth(isGoing ? 4 : 0);
+
+        interestedButton.setAlpha(isInterested ? 1.0f : 0.6f);
+        interestedButton.setStrokeWidth(isInterested ? 4 : 0);
+    }
+
+    private void checkAdminPermissions() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
+
         FirebaseFirestore.getInstance().collection("users").document(uid).get()
                 .addOnSuccessListener(doc -> {
-                    boolean isAdmin = false;
-                    String role = "";
-                    if (doc.exists()) {
-                        Object isAdminObj = doc.get("isAdmin");
-                        Object roleObj = doc.get("role");
-                        if (isAdminObj instanceof Boolean) {
-                            isAdmin = (Boolean) isAdminObj;
-                        } else if (isAdminObj != null) {
-                            String val = isAdminObj.toString().trim().toLowerCase();
-                            isAdmin = val.equals("true") || val.equals("1") || val.equals("yes");
-                        }
-                        if (roleObj != null) role = roleObj.toString().trim();
-                    }
+                    if (!doc.exists()) return;
+                    
+                    String role = doc.getString("role");
+                    boolean isAdmin = Boolean.TRUE.equals(doc.getBoolean("isAdmin"));
+                    boolean isPrivileged = isAdmin || "ADMIN".equals(role) || "SUPER_ADMIN".equals(role) || "EXCOM".equals(role);
+                    boolean isCreator = uid.equals(currentEvent.getCreatedByUserId());
 
-                    // Show delete and edit buttons for admins or event creators
-                    boolean isEventCreator = currentEvent != null && currentEvent.getCreatedByUserId() != null
-                            && currentEvent.getCreatedByUserId().equals(uid);
-                    boolean isPrivileged = isAdmin || "SUPER_ADMIN".equalsIgnoreCase(role)
-                            || "ADMIN".equalsIgnoreCase(role) || "EXCOM".equalsIgnoreCase(role);
-
-                    if (isPrivileged || isEventCreator) {
-                        if (deleteEventButton != null) deleteEventButton.setVisibility(View.VISIBLE);
-                        if (editEventButton != null) editEventButton.setVisibility(View.VISIBLE);
-                    } else {
-                        if (deleteEventButton != null) deleteEventButton.setVisibility(View.GONE);
-                        if (editEventButton != null) editEventButton.setVisibility(View.GONE);
+                    if (isPrivileged || isCreator) {
+                        editEventButton.setVisibility(View.VISIBLE);
+                        deleteEventButton.setVisibility(View.VISIBLE);
                     }
-                })
-                .addOnFailureListener(e -> {
-                    if (deleteEventButton != null) deleteEventButton.setVisibility(View.GONE);
-                    if (editEventButton != null) editEventButton.setVisibility(View.GONE);
                 });
     }
 
-    private void showDeleteConfirmationDialog() {
+    private void addToCalendar() {
+        Intent intent = new Intent(Intent.ACTION_INSERT)
+                .setData(CalendarContract.Events.CONTENT_URI)
+                .putExtra(CalendarContract.Events.TITLE, currentEvent.getTitle())
+                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, currentEvent.getStartTime())
+                .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, currentEvent.getEndTime())
+                .putExtra(CalendarContract.Events.EVENT_LOCATION, currentEvent.getLocationName())
+                .putExtra(CalendarContract.Events.EVENT_TIMEZONE, TimeZone.getDefault().getID());
+        startActivity(intent);
+    }
+
+    private void editEvent() {
+        Intent intent = new Intent(this, com.example.ieeeconnect.activities.EditEventActivity.class);
+        intent.putExtra("eventId", eventId);
+        editEventLauncher.launch(intent);
+    }
+
+    private void showDeleteConfirmation() {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Event")
-                .setMessage("Are you sure you want to delete this event? This action cannot be undone.")
+                .setMessage("Are you sure you want to delete this event?")
                 .setPositiveButton("Delete", (dialog, which) -> deleteEvent())
                 .setNegativeButton("Cancel", null)
-                .setIcon(R.drawable.ic_delete)
                 .show();
     }
 
     private void deleteEvent() {
-        if (currentEvent == null || currentEvent.getEventId() == null) {
-            Toast.makeText(this, "Cannot delete event: Invalid event", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Try to find and delete by eventId field in Firestore
-        FirebaseFirestore.getInstance().collection("events")
-                .whereEqualTo("eventId", currentEvent.getEventId())
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    if (!querySnapshot.isEmpty()) {
-                        // Delete the first matching document
-                        querySnapshot.getDocuments().get(0).getReference().delete()
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(this, "Event deleted successfully", Toast.LENGTH_SHORT).show();
-                                    setResult(RESULT_OK); // Notify parent to reload
-                                    finish();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(this, "Failed to delete event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
-                    } else {
-                        Toast.makeText(this, "Event not found", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to delete event: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        FirebaseFirestore.getInstance().collection("events").document(eventId).delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Event deleted", Toast.LENGTH_SHORT).show();
+                    finish();
                 });
     }
 
-    private void editEvent() {
-        if (currentEvent == null) {
-            Toast.makeText(this, "Cannot edit event: Invalid event", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Start EditEventActivity with the event data using launcher
-        Intent intent = new Intent(this, com.example.ieeeconnect.activities.EditEventActivity.class);
-        intent.putExtra("eventId", currentEvent.getEventId());
-        intent.putExtra("title", currentEvent.getTitle());
-        intent.putExtra("description", currentEvent.getDescription());
-        intent.putExtra("location", currentEvent.getLocationName());
-        intent.putExtra("bannerUrl", currentEvent.getBannerUrl());
-        intent.putExtra("startTime", currentEvent.getStartTime());
-        intent.putExtra("endTime", currentEvent.getEndTime());
-        editEventLauncher.launch(intent);
-    }
-
-    public static void startWithTransition(AppCompatActivity activity, View sharedImage, String eventId) {
-        Intent intent = new Intent(activity, EventDetailActivity.class);
-        intent.putExtra(EXTRA_EVENT, eventId);
-        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
-                activity,
-                Pair.create(sharedImage, "eventBannerTransition")
-        );
-        activity.startActivity(intent, options.toBundle());
-    }
-
     private String formatEventTime(long start, long end) {
-        // Simple formatting, you can improve as needed
-        java.text.DateFormat df = android.text.format.DateFormat.getMediumDateFormat(this);
-        java.text.DateFormat tf = android.text.format.DateFormat.getTimeFormat(this);
-        String startStr = df.format(new java.util.Date(start)) + " " + tf.format(new java.util.Date(start));
-        String endStr = df.format(new java.util.Date(end)) + " " + tf.format(new java.util.Date(end));
-        return startStr + " - " + endStr;
+        SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault());
+        return sdf.format(new Date(start));
     }
 }

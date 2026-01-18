@@ -7,6 +7,20 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
+    <!-- Enhanced queries for GMS and Firebase stability on Android 11+ -->
+    <queries>
+        <package android:name="com.google.android.gms" />
+        <package android:name="com.android.vending" />
+        <intent>
+            <action android:name="com.google.android.gms.settings.ads.PRIVACY_SANDBOX_SETTINGS" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
+
     <application
         android:name=".MyApplication"
         android:allowBackup="true"
@@ -19,7 +33,7 @@
         android:theme="@style/Theme.IeeeConnect"
         android:usesCleartextTraffic="true"
         android:enableOnBackInvokedCallback="true">
-        <!-- Main entry goes to MainActivity; Onboarding is secondary -->
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -28,54 +42,23 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.onboarding.OnboardingActivity"
-            android:exported="false" />
-        <activity
-            android:name=".DashboardActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.admin.AdminDashboardActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.admin.MemberListActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.admin.QrScannerActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.ChangePasswordActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.PasswordChangedActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.SignUpActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.SetPasswordActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.AccountReadyActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.CreateEventActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.EditEventActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activities.EditProfileActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ui.events.EventDetailActivity"
-            android:exported="false" />
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false" />
-        <activity
-            android:name=".ForgotPasswordActivity"
-            android:exported="false" />
+
+        <activity android:name=".ui.onboarding.OnboardingActivity" android:exported="false" />
+        <activity android:name=".DashboardActivity" android:exported="false" />
+        <activity android:name=".ui.admin.AdminDashboardActivity" android:exported="false" />
+        <activity android:name=".ui.admin.MemberListActivity" android:exported="false" />
+        <activity android:name=".ui.admin.QrScannerActivity" android:exported="false" />
+        <activity android:name=".activities.ChangePasswordActivity" android:exported="false" />
+        <activity android:name=".activities.PasswordChangedActivity" android:exported="false" />
+        <activity android:name=".activities.SignUpActivity" android:exported="false" />
+        <activity android:name=".activities.SetPasswordActivity" android:exported="false" />
+        <activity android:name=".activities.AccountReadyActivity" android:exported="false" />
+        <activity android:name=".activities.CreateEventActivity" android:exported="false" />
+        <activity android:name=".activities.EditEventActivity" android:exported="false" />
+        <activity android:name=".activities.EditProfileActivity" android:exported="false" />
+        <activity android:name=".ui.events.EventDetailActivity" android:exported="false" />
+        <activity android:name=".LoginActivity" android:exported="false" />
+        <activity android:name=".ForgotPasswordActivity" android:exported="false" />
     </application>
 
 </manifest>

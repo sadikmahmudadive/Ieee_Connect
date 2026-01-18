@@ -13,9 +13,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 import com.example.ieeeconnect.database.converters.ListToStringConverter;
 import com.example.ieeeconnect.domain.model.Event;
 
-// Bumped version to 21 to reflect schema changes and allow non-destructive migration for 'category' column.
+// Bumped version to 22 to force destructive migration and resolve schema mismatch crash.
 // Enable exportSchema so the annotation processor will write schema JSON files to the configured kapt schemaLocation.
-@Database(entities = {Event.class, PendingEvent.class}, version = 21, exportSchema = true)
+@Database(entities = {Event.class, PendingEvent.class}, version = 22, exportSchema = true)
 @TypeConverters(ListToStringConverter.class)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract EventDao eventDao();
@@ -87,6 +87,7 @@ public abstract class AppDatabase extends RoomDatabase {
                             AppDatabase.class, "ieee_connect_database_v8")
                             // Register migrations so Room can upgrade without destroying user data.
                             .addMigrations(MIGRATION_19_20, MIGRATION_20_21)
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

@@ -51,7 +51,6 @@ public class EventRepository {
     }
 
     private void loadEvents(Context ctx) {
-        // Load cached events on diskIO, then postValue and trigger network fetch
         diskIO.execute(() -> {
             List<Event> cached;
             try {
@@ -61,12 +60,10 @@ public class EventRepository {
                 cached = new ArrayList<>();
             }
             allEvents.postValue(cached);
-            // After posting cached, fetch from network
             fetchFromFirestore(ctx);
         });
     }
 
-    // public trigger to refresh from network
     public void refreshFromNetwork(Context ctx) {
         fetchFromFirestore(ctx);
     }
@@ -77,64 +74,40 @@ public class EventRepository {
             if (task.isSuccessful() && task.getResult() != null) {
                 List<Event> events = new ArrayList<>();
                 for (QueryDocumentSnapshot document : task.getResult()) {
+                    Log.d(TAG, "Firestore doc: " + document.getId() + " => " + document.getData());
                     try {
                         Event event = document.toObject(Event.class);
                         if (event == null) continue;
                         event.setEventId(document.getId());
-                        if (event.getCreatedByUserId() == null) {
-                            event.setCreatedByUserId("");
-                        }
-                        if (event.getTitle() == null) event.setTitle("Untitled Event");
-                        if (event.getDescription() == null) event.setDescription("");
-                        if (event.getGoingUserIds() == null) event.setGoingUserIds(new ArrayList<>());
-                        if (event.getInterestedUserIds() == null) event.setInterestedUserIds(new ArrayList<>());
                         events.add(event);
                     } catch (Exception ex) {
                         Log.w(TAG, "Skipping invalid event document " + document.getId(), ex);
                     }
                 }
 
-                // persist to Room on background thread
+                // Crucial fix: Always refresh local DB to match Firestore state
                 diskIO.execute(() -> {
                     try {
-                        if (!events.isEmpty()) {
-                            eventDao.insertAll(events);
-                        }
+                        eventDao.refreshEvents(events);
                     } catch (Exception e) {
-                        Log.w(TAG, "Failed to persist events to local DB", e);
+                        Log.w(TAG, "Failed to refresh local DB", e);
                     }
                 });
 
                 Log.d(TAG, "Fetched " + events.size() + " events from Firestore");
                 allEvents.postValue(events);
             } else {
-                Exception e = task.getException();
-                Log.w(TAG, "Failed to fetch events from Firestore", e);
-                if (allEvents.getValue() == null) {
-                    allEvents.postValue(new ArrayList<>());
-                }
+                Log.w(TAG, "Failed to fetch events from Firestore", task.getException());
             }
         });
     }
 
-    /**
-     * Create a new event. If network available, attempt to push to Firestore immediately.
-     * If offline or upload fails, save to `pending_events` table and schedule a WorkManager job to upload later.
-     */
     public void createEvent(Event event, Context context) {
-        // try immediate upload
         if (isNetworkAvailable(context)) {
             firestore.collection("events").add(event)
-                    .addOnSuccessListener(docRef -> {
-                        // on success, fetch latest from network to refresh local DB/UI
-                        fetchFromFirestore(context);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.w(TAG, "Failed to create event online, saving to pending", e);
-                        savePendingAndEnqueue(event, context);
-                    });
+                    .addOnSuccessListener(docRef -> fetchFromFirestore(context))
+                    .addOnFailureListener(e -> savePendingAndEnqueue(event, context));
         } else {
-            Log.d(TAG, "No network - saving event to pending queue");
             savePendingAndEnqueue(event, context);
         }
     }
@@ -142,12 +115,9 @@ public class EventRepository {
     private void savePendingAndEnqueue(Event event, Context context) {
         diskIO.execute(() -> {
             try {
-                // insert pending event to DB
                 com.example.ieeeconnect.database.PendingEvent pe = new com.example.ieeeconnect.database.PendingEvent(event);
                 pendingEventDao.insertPending(pe);
-                // enqueue a WorkManager job to upload pending events; use unique work to avoid duplicate floods
-                OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(UploadPendingEventWorker.class)
-                        .build();
+                OneTimeWorkRequest work = new OneTimeWorkRequest.Builder(UploadPendingEventWorker.class).build();
                 WorkManager.getInstance(context).enqueueUniqueWork("upload_pending_events", ExistingWorkPolicy.KEEP, work);
             } catch (Exception ex) {
                 Log.w(TAG, "Failed to persist pending event", ex);
@@ -158,7 +128,6 @@ public class EventRepository {
     private boolean isNetworkAvailable(Context ctx) {
         try {
             ConnectivityManager cm = (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
-            if (cm == null) return false;
             NetworkInfo ni = cm.getActiveNetworkInfo();
             return ni != null && ni.isConnected();
         } catch (Exception e) {
@@ -166,16 +135,11 @@ public class EventRepository {
         }
     }
 
-    /**
-     * Toggle Going status for a user on an event with optimistic UI update.
-     * Replaces AsyncTask persistence with diskIO executor submissions.
-     */
     @MainThread
     public void toggleGoingOptimistic(String eventId, String userId) {
         List<Event> current = allEvents.getValue();
         if (current == null) return;
 
-        // find event index
         int idx = -1;
         for (int i = 0; i < current.size(); i++) {
             if (current.get(i).getEventId().equals(eventId)) {
@@ -188,96 +152,45 @@ public class EventRepository {
         Event target = current.get(idx);
         boolean wasGoing = target.getGoingUserIds().contains(userId);
 
-        // create a copy of lists for mutation
-        List<Event> updated = new ArrayList<>();
-        for (Event e : current) updated.add(e);
-
-        Event copy = new Event();
-        copy.setEventId(target.getEventId());
-        copy.setTitle(target.getTitle());
-        copy.setDescription(target.getDescription());
-        copy.setEventTime(target.getEventTime());
-        copy.setBannerUrl(target.getBannerUrl());
-        copy.setCreatedByUserId(target.getCreatedByUserId());
-        copy.setGoingUserIds(new ArrayList<>(target.getGoingUserIds()));
-        copy.setInterestedUserIds(new ArrayList<>(target.getInterestedUserIds()));
-        copy.setLocationName(target.getLocationName());
-        copy.setStartTime(target.getStartTime());
-        copy.setEndTime(target.getEndTime());
-        copy.setId(target.getId());
-        copy.setLocation(target.getLocation());
-        copy.setCreatedAt(target.getCreatedAt());
-        copy.setCategory(target.getCategory());
+        List<Event> updated = new ArrayList<>(current);
+        Event copy = createEventCopy(target);
 
         if (wasGoing) {
             copy.getGoingUserIds().remove(userId);
         } else {
             if (!copy.getGoingUserIds().contains(userId)) copy.getGoingUserIds().add(userId);
-            // also ensure removed from interested
             copy.getInterestedUserIds().remove(userId);
         }
 
         updated.set(idx, copy);
-        // post optimistic update
         allEvents.setValue(updated);
 
-        // persist change locally in background
-        diskIO.execute(() -> {
-            try {
-                eventDao.insertAll(updated);
-            } catch (Exception e) {
-                Log.w(TAG, "Failed to persist optimistic change", e);
-            }
-        });
+        diskIO.execute(() -> eventDao.refreshEvents(updated));
 
-        // perform firestore atomic array updates
         if (wasGoing) {
-            firestore.collection("events").document(eventId)
-                    .update("goingUserIds", FieldValue.arrayRemove(userId))
-                    .addOnFailureListener(e -> {
-                        Log.w(TAG, "Failed to remove going in firestore, reverting", e);
-                        // revert UI
-                        revertEventTo(eventId, target);
-                    });
+            firestore.collection("events").document(eventId).update("goingUserIds", FieldValue.arrayRemove(userId));
         } else {
-            firestore.collection("events").document(eventId)
-                    .update("goingUserIds", FieldValue.arrayUnion(userId), "interestedUserIds", FieldValue.arrayRemove(userId))
-                    .addOnFailureListener(e -> {
-                        Log.w(TAG, "Failed to add going in firestore, reverting", e);
-                        // revert UI
-                        revertEventTo(eventId, target);
-                    });
+            firestore.collection("events").document(eventId).update("goingUserIds", FieldValue.arrayUnion(userId), "interestedUserIds", FieldValue.arrayRemove(userId));
         }
     }
 
-    @MainThread
-    private void revertEventTo(String eventId, Event original) {
-        List<Event> current = allEvents.getValue();
-        if (current == null) return;
-        List<Event> updated = new ArrayList<>();
-        for (Event e : current) {
-            if (e.getEventId().equals(eventId)) {
-                updated.add(original);
-            } else {
-                updated.add(e);
-            }
-        }
-        allEvents.setValue(updated);
-
-        // persist revert
-        diskIO.execute(() -> {
-            try {
-                eventDao.insertAll(updated);
-            } catch (Exception ex) {
-                Log.w(TAG, "Failed to persist revert", ex);
-            }
-        });
+    private Event createEventCopy(Event t) {
+        Event c = new Event();
+        c.setEventId(t.getEventId());
+        c.setTitle(t.getTitle());
+        c.setDescription(t.getDescription());
+        c.setEventTime(t.getEventTime());
+        c.setBannerUrl(t.getBannerUrl());
+        c.setCreatedByUserId(t.getCreatedByUserId());
+        c.setGoingUserIds(new ArrayList<>(t.getGoingUserIds()));
+        c.setInterestedUserIds(new ArrayList<>(t.getInterestedUserIds()));
+        c.setLocationName(t.getLocationName());
+        c.setStartTime(t.getStartTime());
+        c.setEndTime(t.getEndTime());
+        c.setCategory(t.getCategory());
+        return c;
     }
 
-    /**
-     * Toggle Interested status with optimistic UI update.
-     */
-    @MainThread
     public void toggleInterestedOptimistic(String eventId, String userId) {
         List<Event> current = allEvents.getValue();
         if (current == null) return;
@@ -294,59 +207,25 @@ public class EventRepository {
         Event target = current.get(idx);
         boolean wasInterested = target.getInterestedUserIds().contains(userId);
 
-        List<Event> updated = new ArrayList<>();
-        for (Event e : current) updated.add(e);
-
-        Event copy = new Event();
-        copy.setEventId(target.getEventId());
-        copy.setTitle(target.getTitle());
-        copy.setDescription(target.getDescription());
-        copy.setEventTime(target.getEventTime());
-        copy.setBannerUrl(target.getBannerUrl());
-        copy.setCreatedByUserId(target.getCreatedByUserId());
-        copy.setGoingUserIds(new ArrayList<>(target.getGoingUserIds()));
-        copy.setInterestedUserIds(new ArrayList<>(target.getInterestedUserIds()));
-        copy.setLocationName(target.getLocationName());
-        copy.setStartTime(target.getStartTime());
-        copy.setEndTime(target.getEndTime());
-        copy.setId(target.getId());
-        copy.setLocation(target.getLocation());
-        copy.setCreatedAt(target.getCreatedAt());
-        copy.setCategory(target.getCategory());
+        List<Event> updated = new ArrayList<>(current);
+        Event copy = createEventCopy(target);
 
         if (wasInterested) {
             copy.getInterestedUserIds().remove(userId);
         } else {
             if (!copy.getInterestedUserIds().contains(userId)) copy.getInterestedUserIds().add(userId);
-            // ensure removed from going
             copy.getGoingUserIds().remove(userId);
         }
 
         updated.set(idx, copy);
         allEvents.setValue(updated);
 
-        diskIO.execute(() -> {
-            try {
-                eventDao.insertAll(updated);
-            } catch (Exception e) {
-                Log.w(TAG, "Failed to persist optimistic change", e);
-            }
-        });
+        diskIO.execute(() -> eventDao.refreshEvents(updated));
 
         if (wasInterested) {
-            firestore.collection("events").document(eventId)
-                    .update("interestedUserIds", FieldValue.arrayRemove(userId))
-                    .addOnFailureListener(e -> {
-                        Log.w(TAG, "Failed to remove interested in firestore, reverting", e);
-                        revertEventTo(eventId, target);
-                    });
+            firestore.collection("events").document(eventId).update("interestedUserIds", FieldValue.arrayRemove(userId));
         } else {
-            firestore.collection("events").document(eventId)
-                    .update("interestedUserIds", FieldValue.arrayUnion(userId), "goingUserIds", FieldValue.arrayRemove(userId))
-                    .addOnFailureListener(e -> {
-                        Log.w(TAG, "Failed to add interested in firestore, reverting", e);
-                        revertEventTo(eventId, target);
-                    });
+            firestore.collection("events").document(eventId).update("interestedUserIds", FieldValue.arrayUnion(userId), "goingUserIds", FieldValue.arrayRemove(userId));
         }
     }
 

@@ -258,6 +258,21 @@
                 app:layout_constraintTop_toBottomOf="@+id/registered_events_title"
                 tools:listitem="@layout/item_event_card" />
 
+            <!-- Empty state for registered events -->
+            <TextView
+                android:id="@+id/my_events_empty"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="You haven't registered for any events yet."
+                android:textColor="@color/onSurfaceVariant"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@+id/registered_events_title"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
             <!-- Attendance Header -->
             <TextView
                 android:id="@+id/attendance_title"
@@ -301,6 +316,7 @@
 
             <!-- Achievements List -->
             <LinearLayout
+                android:id="@+id/achievements_container"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -336,11 +352,59 @@
                         android:layout_height="match_parent"
                         android:gravity="center"
                         android:text="@string/more_achievements"
-                        android:textColor="@color/white"
+                        android:textColor="#FFFFFF"
                         android:textSize="16sp"
                         android:textStyle="bold" />
                 </FrameLayout>
             </LinearLayout>
+
+            <!-- Logout Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_logout"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginTop="40dp"
+                android:layout_marginHorizontal="32dp"
+                android:text="Logout"
+                android:textColor="?attr/colorError"
+                app:rippleColor="?attr/colorError"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_logout"
+                app:iconGravity="textStart"
+                app:iconTint="?attr/colorError"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/achievements_container" />
+
+            <!-- Upload Progress Bar (horizontal with percent) -->
+            <ProgressBar
+                android:id="@+id/upload_progress_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="0dp"
+                android:layout_height="8dp"
+                android:layout_marginTop="16dp"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="0"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btn_logout"
+                android:progressTint="?attr/colorPrimary" />
+
+            <TextView
+                android:id="@+id/upload_progress_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0%"
+                android:textColor="@color/onSurface"
+                android:textSize="12sp"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:layout_constraintTop_toBottomOf="@+id/upload_progress_bar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>

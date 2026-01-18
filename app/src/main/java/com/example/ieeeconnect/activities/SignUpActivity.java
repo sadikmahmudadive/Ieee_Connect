@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,7 +21,10 @@ import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.example.ieeeconnect.data.remote.CloudinaryManager;
 import com.example.ieeeconnect.databinding.ActivitySignUpBinding;
+import com.example.ieeeconnect.util.ImageUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 public class SignUpActivity extends AppCompatActivity {
@@ -137,31 +141,76 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void uploadToCloudinary(Uri imageUri) {
-        CloudinaryManager.upload(imageUri, new UploadCallback() {
-            @Override
-            public void onStart(String requestId) {
-                // Show progress
+        // Resize locally before upload and show progress UI
+        try {
+            Bitmap original = ImageUtils.getBitmapFromUri(this, imageUri);
+            if (original == null) return;
+            Bitmap resized = ImageUtils.scaleDownBitmap(original, 800);
+            Uri uploadUri = ImageUtils.writeBitmapToCacheAndGetUri(this, resized, "signup_profile_upload.jpg");
+            if (uploadUri == null) {
+                Toast.makeText(this, "Failed to prepare image", Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            @Override
-            public void onProgress(String requestId, long bytes, long totalBytes) {
-                // Show progress
-            }
+            // show progress UI and disable interactions
+            binding.uploadProgressContainer.setVisibility(android.view.View.VISIBLE);
+            binding.uploadProgressBar.setIndeterminate(false);
+            binding.uploadProgressBar.setProgress(0);
+            binding.uploadProgressText.setText("0%");
+            binding.profileImage.setEnabled(false);
 
-            @Override
-            public void onSuccess(String requestId, Map resultData) {
-                profileImageUrl = (String) resultData.get("url");
-            }
+            CloudinaryManager.upload(uploadUri, new UploadCallback() {
+                @Override
+                public void onStart(String requestId) {
+                    // no-op
+                }
 
-            @Override
-            public void onError(String requestId, ErrorInfo error) {
-                Toast.makeText(SignUpActivity.this, "Upload failed: " + error.getDescription(), Toast.LENGTH_SHORT).show();
-            }
+                @Override
+                public void onProgress(String requestId, long bytes, long totalBytes) {
+                    try {
+                        int percent = (int) ((bytes * 100) / (totalBytes == 0 ? 1 : totalBytes));
+                        runOnUiThread(() -> {
+                            binding.uploadProgressBar.setIndeterminate(false);
+                            binding.uploadProgressBar.setProgress(percent);
+                            binding.uploadProgressText.setText(percent + "%");
+                        });
+                    } catch (Exception ignored) {}
+                }
 
-            @Override
-            public void onReschedule(String requestId, ErrorInfo error) {
-                // Reschedule
-            }
-        });
+                @Override
+                public void onSuccess(String requestId, Map resultData) {
+                    profileImageUrl = resultData != null && resultData.get("secure_url") != null ? resultData.get("secure_url").toString() : (resultData != null ? String.valueOf(resultData.get("url")) : null);
+
+                    runOnUiThread(() -> {
+                        Toast.makeText(SignUpActivity.this, "Image uploaded", Toast.LENGTH_SHORT).show();
+                        binding.uploadProgressContainer.setVisibility(android.view.View.GONE);
+                        binding.profileImage.setEnabled(true);
+                    });
+
+                    // cleanup temp file
+                    try {
+                        File f = new File(uploadUri.getPath());
+                        if (f.exists()) f.delete();
+                    } catch (Exception ignored) {}
+                }
+
+                @Override
+                public void onError(String requestId, ErrorInfo error) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(SignUpActivity.this, "Upload failed: " + (error != null ? error.getDescription() : ""), Toast.LENGTH_SHORT).show();
+                        binding.uploadProgressContainer.setVisibility(android.view.View.GONE);
+                        binding.profileImage.setEnabled(true);
+                    });
+                }
+
+                @Override
+                public void onReschedule(String requestId, ErrorInfo error) {
+                    // no-op
+                }
+            });
+
+        } catch (IOException e) {
+            Toast.makeText(this, "Failed to process image", Toast.LENGTH_SHORT).show();
+        }
     }
 }

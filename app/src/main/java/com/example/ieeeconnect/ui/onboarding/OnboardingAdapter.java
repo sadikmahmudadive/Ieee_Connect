@@ -29,9 +29,12 @@ public class OnboardingAdapter extends RecyclerView.Adapter<OnboardingAdapter.VH
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
         OnboardingPage page = pages.get(position);
-        holder.binding.title.setText(page.getTitle());
-        holder.binding.subtitle.setText(page.getSubtitle());
-        LottieAnimationView lav = holder.binding.animationView;
+        
+        // Fixed: Use correct binding names from updated XML IDs
+        holder.binding.onboardingTitle.setText(page.getTitle());
+        holder.binding.onboardingDescription.setText(page.getSubtitle());
+        
+        LottieAnimationView lav = holder.binding.onboardingAnimation;
         lav.setAnimation(page.getAnimationRes());
         lav.playAnimation();
     }
@@ -49,4 +52,3 @@ public class OnboardingAdapter extends RecyclerView.Adapter<OnboardingAdapter.VH
         }
     }
 }
-

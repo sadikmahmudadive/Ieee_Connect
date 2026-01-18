@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -26,7 +27,10 @@ import com.cloudinary.android.callback.UploadCallback;
 import com.example.ieeeconnect.R;
 import com.example.ieeeconnect.data.remote.CloudinaryManager;
 import com.example.ieeeconnect.databinding.FragmentFillProfileInfoBinding;
+import com.example.ieeeconnect.util.ImageUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 
 public class FillProfileInfoFragment extends Fragment {
@@ -132,31 +136,57 @@ public class FillProfileInfoFragment extends Fragment {
     }
 
     private void uploadToCloudinary(Uri imageUri) {
-        CloudinaryManager.upload(imageUri, new UploadCallback() {
-            @Override
-            public void onStart(String requestId) {
-                // Show progress
+        // Resize locally before uploading and show percentage progress if available
+        try {
+            Bitmap original = ImageUtils.getBitmapFromUri(requireContext(), imageUri);
+            if (original == null) return;
+            Bitmap resized = ImageUtils.scaleDownBitmap(original, 1024);
+            Uri uploadUri = ImageUtils.writeBitmapToCacheAndGetUri(requireContext(), resized, "signup_profile_upload.jpg");
+            if (uploadUri == null) {
+                Toast.makeText(requireContext(), "Failed to prepare image", Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            @Override
-            public void onProgress(String requestId, long bytes, long totalBytes) {
-                // Show progress
-            }
+            // show a simple progress indicator in the UI (reuse profileImage view click state)
+            // If you have dedicated progress views in the layout for sign up, update them here.
 
-            @Override
-            public void onSuccess(String requestId, Map resultData) {
-                profileImageUrl = (String) resultData.get("url");
-            }
+            CloudinaryManager.upload(uploadUri, new UploadCallback() {
+                @Override
+                public void onStart(String requestId) {
+                    // start
+                }
 
-            @Override
-            public void onError(String requestId, ErrorInfo error) {
-                Toast.makeText(requireContext(), "Upload failed: " + error.getDescription(), Toast.LENGTH_SHORT).show();
-            }
+                @Override
+                public void onProgress(String requestId, long bytes, long totalBytes) {
+                    try {
+                        int percent = (int) ((bytes * 100) / (totalBytes == 0 ? 1 : totalBytes));
+                        // There is no dedicated progress view on signup layout; we could set contentDescription or similar.
+                        binding.profileImage.setContentDescription(percent + "% uploaded");
+                    } catch (Exception ignored) {}
+                }
 
-            @Override
-            public void onReschedule(String requestId, ErrorInfo error) {
-                // Reschedule
-            }
-        });
+                @Override
+                public void onSuccess(String requestId, Map resultData) {
+                    profileImageUrl = (String) resultData.get("url");
+                    // cleanup temp
+                    try {
+                        File f = new File(uploadUri.getPath());
+                        if (f.exists()) f.delete();
+                    } catch (Exception ignored) {}
+                }
+
+                @Override
+                public void onError(String requestId, ErrorInfo error) {
+                    Toast.makeText(requireContext(), "Upload failed: " + error.getDescription(), Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onReschedule(String requestId, ErrorInfo error) {
+                }
+            });
+
+        } catch (IOException e) {
+            Toast.makeText(requireContext(), "Failed to process image", Toast.LENGTH_SHORT).show();
+        }
     }
 }

@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     tools:context=".ui.events.EventDetailActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -36,106 +37,149 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:padding="16dp">
+        android:background="@color/background"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="24dp">
 
             <TextView
                 android:id="@+id/titleText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAppearance="@style/TextAppearance.AppCompat.Headline" />
+                android:textColor="@color/onSurface"
+                android:textStyle="bold"
+                android:textSize="24sp"
+                android:textAppearance="@style/TextAppearance.Material3.HeadlineMedium" />
 
             <TextView
                 android:id="@+id/timeText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_event"
-                android:drawablePadding="8dp"
-                android:textColor="?android:attr/textColorSecondary" />
+                android:layout_marginTop="8dp"
+                android:drawableStart="@drawable/ic_calendar"
+                android:drawablePadding="12dp"
+                android:textColor="@color/onSurfaceVariant"
+                app:drawableTint="@color/onSurfaceVariant" />
 
             <TextView
                 android:id="@+id/locationText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:drawableStart="@drawable/ic_location_on"
+                android:drawablePadding="12dp"
+                android:textColor="@color/onSurfaceVariant"
+                app:drawableTint="@color/onSurfaceVariant" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="24dp"
+                android:background="@color/surfaceVariant" />
+
+            <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_location_on"
-                android:drawablePadding="8dp"
-                android:textColor="?android:attr/textColorSecondary" />
+                android:text="About Event"
+                android:textColor="@color/onSurface"
+                android:textStyle="bold"
+                android:layout_marginTop="24dp" />
 
             <TextView
                 android:id="@+id/descriptionText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+                android:layout_marginTop="8dp"
+                android:textColor="@color/onSurfaceVariant"
+                android:lineHeight="22sp"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginTop="16dp">
+                android:layout_marginTop="32dp"
+                android:weightSum="3">
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/goingButton"
+                    style="@style/Widget.Material3.Button"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="56dp"
                     android:layout_weight="1"
-                    android:text="Going" />
+                    android:text="Going"
+                    android:paddingHorizontal="4dp"
+                    android:textAllCaps="false"
+                    app:cornerRadius="12dp" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/interestedButton"
+                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="56dp"
                     android:layout_weight="1"
-                    android:text="Interested" />
+                    android:layout_marginStart="8dp"
+                    android:text="Interested"
+                    android:paddingHorizontal="4dp"
+                    android:textAllCaps="false"
+                    app:cornerRadius="12dp" />
 
-                <Button
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/notGoingButton"
+                    style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
+                    android:layout_height="56dp"
                     android:layout_weight="1"
-                    android:text="Not Going" />
+                    android:layout_marginStart="8dp"
+                    android:text="Not Going"
+                    android:paddingHorizontal="4dp"
+                    android:textAllCaps="false"
+                    android:textColor="?attr/colorError"
+                    app:cornerRadius="12dp" />
             </LinearLayout>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/addToCalendarButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="56dp"
                 android:layout_marginTop="16dp"
-                android:text="Add to Calendar" />
+                android:text="Add to Calendar"
+                android:textAllCaps="false"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_calendar"
+                app:iconGravity="textStart" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/editEventButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="24dp"
                 android:text="Edit Event"
-                android:textColor="@android:color/white"
                 android:visibility="gone"
-                app:backgroundTint="@color/primary"
                 app:icon="@drawable/ic_edit"
                 app:iconGravity="textStart" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/deleteEventButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="12dp"
                 android:text="Delete Event"
-                android:textColor="@android:color/white"
+                android:textColor="?attr/colorError"
+                app:iconTint="?attr/colorError"
                 android:visibility="gone"
-                app:backgroundTint="@android:color/holo_red_dark"
                 app:icon="@drawable/ic_delete"
                 app:iconGravity="textStart" />
 
-            <!-- TODO: Add map snippet here -->
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-

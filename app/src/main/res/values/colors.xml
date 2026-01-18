@@ -18,6 +18,7 @@
     <color name="onSurface">#000000</color>
     <color name="surfaceVariant">#F3E8FF</color>
     <color name="onSurfaceVariant">#333333</color>
+    <color name="onBackground">#000000</color>
 
     <!-- Standard Colors -->
     <color name="white">#FFFFFF</color>
@@ -35,4 +36,10 @@
 
     <!-- Background for bottom navigation -->
     <color name="nav_background">#FFFFFFFF</color>
+    <color name="ieee_primary">#3D4FFC</color>
+
+    <!-- Missing color declarations -->
+    <color name="background_primary">#FFFFFF</color>
+    <color name="text_primary">#000000</color>
+    <color name="surface_primary">#FFFFFF</color>
 </resources>

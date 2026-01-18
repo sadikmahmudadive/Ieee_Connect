@@ -85,6 +85,9 @@ public abstract class AppDatabase extends RoomDatabase {
                     instance = Room.databaseBuilder(context.getApplicationContext(), AppDatabase.class, DB_NAME)
                             // register non-destructive migrations to avoid data loss
                             .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                            // If the app encounters an unknown/incompatible schema during migration, fall back to destructive
+                            // migration (clears DB). This avoids crashes on upgrade paths where we can't migrate safely.
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

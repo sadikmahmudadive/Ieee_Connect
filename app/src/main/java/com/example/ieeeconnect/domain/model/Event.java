@@ -42,6 +42,9 @@ public class Event {
     private long createdAt; // Firestore createdAt timestamp
     @Nullable
     private String category; // New field for event category
+    @Nullable
+    private String formattedTime; // Firestore formattedTime field
+    private int likes; // Firestore likes field
 
     public Event() {
         // Default constructor required for calls to DataSnapshot.getValue(Event.class)
@@ -50,7 +53,8 @@ public class Event {
     public Event(@NonNull String eventId, @NonNull String title, @NonNull String description, long eventTime,
                  @Nullable String bannerUrl, @Nullable String createdByUserId, @NonNull List<String> goingUserIds,
                  @NonNull List<String> interestedUserIds, @Nullable String locationName, long startTime, long endTime,
-                 @Nullable String id, @Nullable String location, long createdAt, @Nullable String category) {
+                 @Nullable String id, @Nullable String location, long createdAt, @Nullable String category,
+                 @Nullable String formattedTime, int likes) {
         this.eventId = eventId;
         this.title = title;
         this.description = description;
@@ -66,6 +70,8 @@ public class Event {
         this.location = location;
         this.createdAt = createdAt;
         this.category = category;
+        this.formattedTime = formattedTime;
+        this.likes = likes;
     }
 
     @NonNull
@@ -120,15 +126,16 @@ public class Event {
     public String getCategory() { return category; }
     public void setCategory(@Nullable String category) { this.category = category; }
 
-    public String getFormattedTime() {
+    @Nullable
+    public String getFormattedTime() { return formattedTime; }
+    public void setFormattedTime(@Nullable String formattedTime) { this.formattedTime = formattedTime; }
+    public int getLikes() { return likes; }
+    public void setLikes(int likes) { this.likes = likes; }
+
+    public String getReadableStartTime() {
         // Example: Format startTime as a readable date
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("MMM dd, yyyy HH:mm", java.util.Locale.getDefault());
         return sdf.format(new java.util.Date(startTime));
-    }
-
-    public int getLikes() {
-        // Return the number of interested users as likes
-        return interestedUserIds.size();
     }
 
     @Override

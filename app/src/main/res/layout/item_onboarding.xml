@@ -1,49 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:gravity="center_horizontal"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/background"
     android:padding="24dp">
 
-    <Space
-        android:layout_width="wrap_content"
-        android:layout_height="48dp" />
-
     <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/animationView"
-        android:layout_width="260dp"
-        android:layout_height="260dp"
+        android:id="@+id/onboarding_animation"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:lottie_autoPlay="true"
         app:lottie_loop="true" />
 
-    <Space
-        android:layout_width="wrap_content"
-        android:layout_height="24dp" />
-
     <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
+        android:id="@+id/onboarding_title"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Welcome to IEEE Organizer"
-        android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
-        android:textStyle="bold" />
-
-    <Space
-        android:layout_width="wrap_content"
-        android:layout_height="12dp" />
-
-    <TextView
-        android:id="@+id/subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Organize events, sharing file and Message with other members more easily."
-        android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:layout_marginTop="32dp"
         android:gravity="center"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp" />
+        android:textColor="@color/onSurface"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@+id/onboarding_animation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Onboarding Title" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/onboarding_description"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:textColor="@color/onSurfaceVariant"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@+id/onboarding_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="This is a detailed description of the feature to help the user understand how the app works." />
 
+</androidx.constraintlayout.widget.ConstraintLayout>

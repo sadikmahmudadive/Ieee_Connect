@@ -1,18 +1,19 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.services)
-    alias(libs.plugins.kotlin.android)
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
     alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.example.ieeeconnect"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.ieeeconnect"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 35 
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -34,6 +35,18 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    // Explicitly force versions compatible with compileSdk 35 to resolve AAR conflicts
+    configurations.all {
+        resolutionStrategy {
+            force("androidx.activity:activity:1.9.3")
+            force("androidx.activity:activity-ktx:1.9.3")
+            force("androidx.navigation:navigation-fragment:2.8.5")
+            force("androidx.navigation:navigation-ui:2.8.5")
+            force("androidx.navigation:navigation-common:2.8.5")
+            force("androidx.navigation:navigation-runtime:2.8.5")
+        }
+    }
 }
 
 kotlin {
@@ -46,6 +59,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.activity)
     implementation(libs.swiperefreshlayout)
+    implementation(libs.gridlayout)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
 
@@ -64,8 +78,11 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
 
+    // Glide
     implementation(libs.glide)
+    kapt(libs.glide.compiler)
 
+    // Room
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
     ksp(libs.sqlite.jdbc)
