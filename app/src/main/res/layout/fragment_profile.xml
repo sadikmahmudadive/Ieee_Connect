@@ -10,7 +10,53 @@
         android:fillViewport="true"
         tools:context="com.example.ieeeconnect.ui.profile.ProfileFragment">
 
+        <!-- Shimmer Loading Placeholder -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.facebook.shimmer.ShimmerFrameLayout
+                android:id="@+id/profile_shimmer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:background="@color/surfaceVariant" />
+
+                    <View
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/circle_overlay" />
+
+                    <View
+                        android:layout_width="180dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="16dp"
+                        android:background="@color/surfaceVariant" />
+
+                    <View
+                        android:layout_width="120dp"
+                        android:layout_height="14dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="8dp"
+                        android:background="@color/surfaceVariant" />
+                </LinearLayout>
+            </com.facebook.shimmer.ShimmerFrameLayout>
+
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/profile_content_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingBottom="32dp">
@@ -112,18 +158,75 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
+            <!-- Bio -->
+            <TextView
+                android:id="@+id/profile_bio"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginHorizontal="32dp"
+                android:gravity="center"
+                android:textColor="@color/onSurfaceVariant"
+                android:textSize="14sp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/user_info_section"
+                tools:text="IEEE Student Member • Android Developer"
+                tools:visibility="visible" />
+
+            <!-- Info Chips (Dept, Phone) -->
+            <LinearLayout
+                android:id="@+id/profile_info_chips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/profile_bio">
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_dept"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    app:chipIcon="@drawable/ic_community"
+                    app:chipIconSize="16dp"
+                    app:chipBackgroundColor="@color/surfaceVariant"
+                    tools:text="CSE"
+                    tools:visibility="visible" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_phone"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:visibility="gone"
+                    app:chipIcon="@drawable/ic_call"
+                    app:chipIconSize="16dp"
+                    app:chipBackgroundColor="@color/surfaceVariant"
+                    tools:text="+91 9876543210"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
             <!-- Action Buttons -->
             <LinearLayout
                 android:id="@+id/actions_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="16dp"
                 android:gravity="center"
                 android:orientation="horizontal"
                 android:paddingHorizontal="32dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/user_info_section">
+                app:layout_constraintTop_toBottomOf="@+id/profile_info_chips">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_profile"
@@ -300,6 +403,20 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/attendance_title" />
 
+            <TextView
+                android:id="@+id/attendance_summary"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginHorizontal="24dp"
+                android:gravity="center"
+                android:textColor="@color/onSurfaceVariant"
+                android:textSize="13sp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/attendance_chart" />
+
             <!-- Achievements Header -->
             <TextView
                 android:id="@+id/achievements_title"
@@ -312,7 +429,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/attendance_chart" />
+                app:layout_constraintTop_toBottomOf="@+id/attendance_summary" />
 
             <!-- Achievements List -->
             <LinearLayout
@@ -358,13 +475,46 @@
                 </FrameLayout>
             </LinearLayout>
 
+            <!-- Achievements empty state -->
+            <TextView
+                android:id="@+id/achievements_empty"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginHorizontal="24dp"
+                android:gravity="center"
+                android:text="Attend events and participate to earn achievements!"
+                android:textColor="@color/onSurfaceVariant"
+                android:textSize="12sp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/achievements_container" />
+
+            <!-- Change Password Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_change_password"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginHorizontal="32dp"
+                android:text="Change Password"
+                android:textAllCaps="false"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_edit"
+                app:iconGravity="textStart"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/achievements_empty" />
+
             <!-- Logout Button -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_logout"
                 style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="0dp"
                 android:layout_height="56dp"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="12dp"
                 android:layout_marginHorizontal="32dp"
                 android:text="Logout"
                 android:textColor="?attr/colorError"
@@ -375,7 +525,7 @@
                 app:iconTint="?attr/colorError"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/achievements_container" />
+                app:layout_constraintTop_toBottomOf="@+id/btn_change_password" />
 
             <!-- Upload Progress Bar (horizontal with percent) -->
             <ProgressBar
@@ -407,5 +557,6 @@
                 app:layout_constraintStart_toStartOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
+        </FrameLayout>
     </androidx.core.widget.NestedScrollView>
 </layout>

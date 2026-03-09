@@ -45,6 +45,7 @@
     <string name="label_email">Email</string>
     <string name="label_phone">Phone</string>
     <string name="label_gender">Gender</string>
+    <string name="label_bio">Bio</string>
 
     <!-- Navigation / Admin / Home strings -->
     <string name="nav_home">Home</string>

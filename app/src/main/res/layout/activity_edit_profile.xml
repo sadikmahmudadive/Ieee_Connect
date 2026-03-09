@@ -141,6 +141,20 @@
                             android:textColor="@color/onSurface"
                             android:textColorHint="@color/onSurfaceVariant" />
                     </LinearLayout>
+                    <View style="@style/EditProfileDividerStyle" />
+
+                    <!-- Bio Row -->
+                    <LinearLayout style="@style/EditProfileRowStyle">
+                        <TextView style="@style/EditProfileLabelStyle" android:text="@string/label_bio" />
+                        <EditText android:id="@+id/et_bio"
+                            style="@style/EditProfileInputStyle"
+                            android:hint="Tell us about yourself"
+                            android:inputType="textMultiLine"
+                            android:minLines="1"
+                            android:maxLines="3"
+                            android:textColor="@color/onSurface"
+                            android:textColorHint="@color/onSurfaceVariant" />
+                    </LinearLayout>
                 </LinearLayout>
 
                 <!-- Private Info Header -->

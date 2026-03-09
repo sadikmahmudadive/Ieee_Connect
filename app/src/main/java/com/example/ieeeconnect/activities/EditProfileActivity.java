@@ -106,7 +106,8 @@ public class EditProfileActivity extends AppCompatActivity {
                         binding.etEmail.setText(doc.getString("email"));
                         binding.etPhone.setText(doc.getString("phone"));
                         binding.etGender.setText(doc.getString("gender"));
-                        
+                        binding.etBio.setText(doc.getString("bio"));
+
                         currentPhotoUrl = doc.getString("photoUrl");
                         if (!TextUtils.isEmpty(currentPhotoUrl)) {
                             Glide.with(this).load(currentPhotoUrl).placeholder(R.drawable.ic_profile_placeholder).into(binding.editProfileImage);
@@ -121,6 +122,7 @@ public class EditProfileActivity extends AppCompatActivity {
         String dept = binding.etDept.getText().toString().trim();
         String phone = binding.etPhone.getText().toString().trim();
         String gender = binding.etGender.getText().toString().trim();
+        String bio = binding.etBio.getText().toString().trim();
 
         if (TextUtils.isEmpty(name)) {
             binding.etName.setError("Name is required");
@@ -133,6 +135,7 @@ public class EditProfileActivity extends AppCompatActivity {
         updates.put("dept", dept);
         updates.put("phone", phone);
         updates.put("gender", gender);
+        updates.put("bio", bio);
         // Note: username, role, and email are read-only and explicitly excluded from updates
 
         if (isImageChanged && pendingImageData != null) {
@@ -159,12 +162,14 @@ public class EditProfileActivity extends AppCompatActivity {
         firestore.collection("users").document(uid).update(updates)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show();
+                    setResult(RESULT_OK);
                     finish();
                 })
                 .addOnFailureListener(e -> {
                     firestore.collection("users").document(uid).set(updates, com.google.firebase.firestore.SetOptions.merge())
                             .addOnSuccessListener(v -> {
                                 Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show();
+                                setResult(RESULT_OK);
                                 finish();
                             })
                             .addOnFailureListener(e2 -> {
