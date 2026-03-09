@@ -193,11 +193,49 @@
             app:cardBackgroundColor="@color/surfaceVariant"
             android:layout_marginBottom="12dp">
 
-            <ImageView
-                android:id="@+id/eventBanner"
+            <!-- Wrap ImageView in FrameLayout so we can overlay a determinate progress bar + percent -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:scaleType="centerCrop" />
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/eventBanner"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+
+                <!-- Progress overlay for banner uploads -->
+                <LinearLayout
+                    android:id="@+id/edit_banner_progress_container"
+                    android:visibility="gone"
+                    android:orientation="horizontal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginBottom="12dp"
+                    android:padding="8dp"
+                    android:background="@drawable/rounded_translucent_bg">
+
+                    <ProgressBar
+                        android:id="@+id/edit_banner_progress_bar"
+                        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+                        android:layout_width="120dp"
+                        android:layout_height="wrap_content"
+                        android:indeterminate="false"
+                        android:max="100"
+                        android:progress="0" />
+
+                    <TextView
+                        android:id="@+id/edit_banner_progress_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0%"
+                        android:textColor="@android:color/white"
+                        android:layout_marginStart="8dp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+            </FrameLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <com.google.android.material.button.MaterialButton

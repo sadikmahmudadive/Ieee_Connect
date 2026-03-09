@@ -93,7 +93,10 @@ public class AdminDashboardFragment extends Fragment {
         boolean isAdmin = args.getBoolean("isAdmin", false);
         String role = args.getString("role", "");
         // Minimal User object for access control
-        User user = new User("", "", "", null, null);
+        User user = new User();
+        user.setId("");
+        user.setName("");
+        user.setEmail("");
         user.setAdmin(isAdmin);
         user.setRole(role);
         return user;

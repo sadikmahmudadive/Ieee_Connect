@@ -20,6 +20,8 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
@@ -85,6 +87,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         binding.googleButton.setOnClickListener(v -> {
+            if (!isGooglePlayServicesAvailable()) {
+                return;
+            }
+            String webClientId = getString(R.string.default_web_client_id);
+            if (webClientId == null || webClientId.trim().isEmpty()) {
+                toast("Google sign-in misconfigured: missing web client id");
+                return;
+            }
             Intent intent = googleSignInClient.getSignInIntent();
             googleLauncher.launch(intent);
         });
@@ -140,8 +150,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupGoogleSignIn() {
+        String webClientId = getString(R.string.default_web_client_id);
+        if (webClientId == null || webClientId.trim().isEmpty()) {
+            android.util.Log.e("MainActivity", "Missing default_web_client_id. Check google-services.json.");
+        }
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestIdToken(webClientId)
                 .requestEmail()
                 .build();
         googleSignInClient = GoogleSignIn.getClient(this, gso);
@@ -149,6 +163,14 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupGoogleLauncher() {
         googleLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() != RESULT_OK) {
+                toast("Google sign-in cancelled");
+                return;
+            }
+            if (result.getData() == null) {
+                toast("Google sign-in failed (no data)");
+                return;
+            }
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
             try {
                 GoogleSignInAccount account = task.getResult(ApiException.class);
@@ -158,9 +180,24 @@ public class MainActivity extends AppCompatActivity {
                     toast("Google sign-in failed (no token)");
                 }
             } catch (ApiException e) {
-                toast("Google sign-in failed");
+                String status = com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes.getStatusCodeString(e.getStatusCode());
+                android.util.Log.e("MainActivity", "Google sign-in failed: " + status + " (" + e.getStatusCode() + ")", e);
+                toast("Google sign-in failed: " + status + " (" + e.getStatusCode() + ")");
             }
         });
+    }
+
+    private boolean isGooglePlayServicesAvailable() {
+        int result = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
+        if (result == ConnectionResult.SUCCESS) {
+            return true;
+        }
+        if (GoogleApiAvailability.getInstance().isUserResolvableError(result)) {
+            GoogleApiAvailability.getInstance().getErrorDialog(this, result, 1001).show();
+        } else {
+            toast("Google Play Services unavailable");
+        }
+        return false;
     }
 
     private void firebaseAuthWithGoogle(String idToken) {

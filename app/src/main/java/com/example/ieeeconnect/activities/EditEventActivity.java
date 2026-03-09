@@ -231,7 +231,12 @@ public class EditEventActivity extends AppCompatActivity {
                 return;
             }
 
-            // show a simple progress by setting content description or use toast; for brevity we'll keep button text and restore later
+            // show overlay progress container we added in layout
+            binding.editBannerProgressContainer.setVisibility(android.view.View.VISIBLE);
+            binding.editBannerProgressBar.setIndeterminate(false);
+            binding.editBannerProgressBar.setProgress(0);
+            binding.editBannerProgressText.setText("0%");
+
             CloudinaryManager.upload(uploadUri, new UploadCallback() {
                 @Override
                 public void onStart(String requestId) {
@@ -241,7 +246,11 @@ public class EditEventActivity extends AppCompatActivity {
                 public void onProgress(String requestId, long bytes, long totalBytes) {
                     try {
                         int percent = (int) ((bytes * 100) / (totalBytes == 0 ? 1 : totalBytes));
-                        runOnUiThread(() -> binding.uploadBannerButton.setText("Uploading... " + percent + "%"));
+                        runOnUiThread(() -> {
+                            binding.editBannerProgressBar.setIndeterminate(false);
+                            binding.editBannerProgressBar.setProgress(percent);
+                            binding.editBannerProgressText.setText(percent + "%");
+                        });
                     } catch (Exception ignored) {}
                 }
 
@@ -255,6 +264,7 @@ public class EditEventActivity extends AppCompatActivity {
                         binding.uploadBannerButton.setEnabled(true);
                         binding.uploadBannerButton.setText("Change Banner");
                         isUploadingNewBanner = false;
+                        binding.editBannerProgressContainer.setVisibility(android.view.View.GONE);
                         if (finalUrl != null) Glide.with(EditEventActivity.this).load(finalUrl).into(binding.eventBanner);
                     });
 
@@ -271,6 +281,7 @@ public class EditEventActivity extends AppCompatActivity {
                         binding.uploadBannerButton.setEnabled(true);
                         binding.uploadBannerButton.setText("Upload Banner");
                         isUploadingNewBanner = false;
+                        binding.editBannerProgressContainer.setVisibility(android.view.View.GONE);
                     });
                 }
 

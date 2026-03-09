@@ -1,53 +1,48 @@
 package com.example.ieeeconnect.domain.model;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import com.google.firebase.database.IgnoreExtraProperties;
 
+@IgnoreExtraProperties
 public class Message {
-    @NonNull
-    private String id;
-    @NonNull
-    private String chatId;
-    @NonNull
+    private String messageId;
     private String senderId;
-    @Nullable
     private String text;
-    @Nullable
-    private String mediaUrl; // Cloudinary URL for images/files
-    @NonNull
-    private long sentAt;
+    private String mediaUrl; // Cloudinary URL for Image/Voice
+    private String type; // "TEXT", "IMAGE", "AUDIO"
+    private long timestamp;
+    private boolean isRead;
 
-    public Message(@NonNull String id, @NonNull String chatId, @NonNull String senderId,
-                   @Nullable String text, @Nullable String mediaUrl, long sentAt) {
-        this.id = id;
-        this.chatId = chatId;
-        this.senderId = senderId;
-        this.text = text;
-        this.mediaUrl = mediaUrl;
-        this.sentAt = sentAt;
+    public Message() {
+        // Default constructor required for calls to DataSnapshot.getValue(Message.class)
     }
 
-    @NonNull
-    public String getId() { return id; }
-    public void setId(@NonNull String id) { this.id = id; }
+    public Message(String messageId, String senderId, String text, String type, long timestamp) {
+        this.messageId = messageId;
+        this.senderId = senderId;
+        this.text = text;
+        this.type = type;
+        this.timestamp = timestamp;
+        this.isRead = false;
+    }
 
-    @NonNull
-    public String getChatId() { return chatId; }
-    public void setChatId(@NonNull String chatId) { this.chatId = chatId; }
+    public String getMessageId() { return messageId; }
+    public void setMessageId(String messageId) { this.messageId = messageId; }
 
-    @NonNull
     public String getSenderId() { return senderId; }
-    public void setSenderId(@NonNull String senderId) { this.senderId = senderId; }
+    public void setSenderId(String senderId) { this.senderId = senderId; }
 
-    @Nullable
     public String getText() { return text; }
-    public void setText(@Nullable String text) { this.text = text; }
+    public void setText(String text) { this.text = text; }
 
-    @Nullable
     public String getMediaUrl() { return mediaUrl; }
-    public void setMediaUrl(@Nullable String mediaUrl) { this.mediaUrl = mediaUrl; }
+    public void setMediaUrl(String mediaUrl) { this.mediaUrl = mediaUrl; }
 
-    public long getSentAt() { return sentAt; }
-    public void setSentAt(long sentAt) { this.sentAt = sentAt; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
+
+    public long getTimestamp() { return timestamp; }
+    public void setTimestamp(long timestamp) { this.timestamp = timestamp; }
+
+    public boolean isRead() { return isRead; }
+    public void setRead(boolean read) { isRead = read; }
 }
-

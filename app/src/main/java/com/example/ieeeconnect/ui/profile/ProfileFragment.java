@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -20,6 +21,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -421,9 +423,43 @@ public class ProfileFragment extends Fragment {
     }
 
     private Bitmap getBitmapFromUri(Uri uri) throws IOException {
+        Bitmap bitmap;
         try (InputStream in = requireContext().getContentResolver().openInputStream(uri)) {
-            return BitmapFactory.decodeStream(in);
+            bitmap = BitmapFactory.decodeStream(in);
         }
+        if (bitmap == null) return null;
+        return rotateBitmapIfRequired(bitmap, uri);
+    }
+
+    private Bitmap rotateBitmapIfRequired(Bitmap img, Uri selectedImage) throws IOException {
+        InputStream input = requireContext().getContentResolver().openInputStream(selectedImage);
+        ExifInterface ei;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            ei = new ExifInterface(input);
+        } else {
+            ei = new ExifInterface(selectedImage.getPath());
+        }
+
+        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return rotateImage(img, 90);
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return rotateImage(img, 180);
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return rotateImage(img, 270);
+            default:
+                return img;
+        }
+    }
+
+    private static Bitmap rotateImage(Bitmap img, int degree) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degree);
+        Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
+        img.recycle();
+        return rotatedImg;
     }
 
     private Bitmap scaleDownBitmap(Bitmap realImage, int maxImageSize) {

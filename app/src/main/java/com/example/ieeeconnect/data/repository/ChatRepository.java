@@ -1,93 +1,152 @@
 package com.example.ieeeconnect.data.repository;
 
-import androidx.annotation.NonNull;
+import android.util.Log;
 
-import com.example.ieeeconnect.data.local.AppDatabase;
-import com.example.ieeeconnect.data.local.MessageEntity;
+import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
+import com.example.ieeeconnect.domain.model.ChatRoom;
 import com.example.ieeeconnect.domain.model.Message;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.example.ieeeconnect.domain.model.User;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executor;
 
 public class ChatRepository {
-    private final DatabaseReference chatsRef;
-    private final AppDatabase db;
-    private final Executor ioExecutor;
+    private static final String TAG = "ChatRepository";
+    private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
     public interface MessagesListener {
         void onMessages(List<Message> messages);
         void onError(Exception e);
     }
 
-    public ChatRepository(@NonNull AppDatabase db, @NonNull Executor ioExecutor) {
-        this.db = db;
-        this.ioExecutor = ioExecutor;
-        this.chatsRef = FirebaseDatabase.getInstance().getReference("chats");
+    public interface UserListener {
+        void onUserFound(User user);
+        void onError(Exception e);
     }
 
-    public void listenForMessages(String chatId, MessagesListener listener) {
-        // load cached first
-        ioExecutor.execute(() -> {
-            List<MessageEntity> cached = db.messageDao().getMessagesForChat(chatId);
-            List<Message> mapped = mapEntities(cached);
-            listener.onMessages(mapped);
-        });
-
-        chatsRef.child(chatId).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                List<Message> messages = new ArrayList<>();
-                for (DataSnapshot child : snapshot.getChildren()) {
-                    Message message = child.getValue(Message.class);
-                    if (message != null) {
-                        messages.add(message);
-                    }
-                }
-                cacheMessages(messages);
-                listener.onMessages(messages);
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                listener.onError(error.toException());
-            }
-        });
-    }
-
-    public void sendMessage(Message message) {
-        chatsRef.child(message.getChatId()).child(message.getId()).setValue(message);
-        cacheMessages(java.util.Collections.singletonList(message));
-    }
-
-    private void cacheMessages(List<Message> messages) {
-        ioExecutor.execute(() -> {
-            List<MessageEntity> entities = new ArrayList<>();
-            for (Message m : messages) {
-                MessageEntity entity = new MessageEntity();
-                entity.id = m.getId();
-                entity.chatId = m.getChatId();
-                entity.senderId = m.getSenderId();
-                entity.text = m.getText();
-                entity.mediaUrl = m.getMediaUrl();
-                entity.sentAt = m.getSentAt();
-                entities.add(entity);
-            }
-            db.messageDao().upsertMessages(entities);
-        });
-    }
-
-    private List<Message> mapEntities(List<MessageEntity> entities) {
-        List<Message> messages = new ArrayList<>();
-        for (MessageEntity e : entities) {
-            messages.add(new Message(e.id, e.chatId, e.senderId, e.text, e.mediaUrl, e.sentAt));
+    // Get list of chat rooms for current user from Firestore
+    public LiveData<List<ChatRoom>> getChatRooms() {
+        MutableLiveData<List<ChatRoom>> roomsLiveData = new MutableLiveData<>();
+        String currentUserId = FirebaseAuth.getInstance().getUid();
+        
+        if (currentUserId == null) {
+            roomsLiveData.setValue(new ArrayList<>());
+            return roomsLiveData;
         }
-        return messages;
+
+        firestore.collection("chat_rooms")
+                .whereArrayContains("participantIds", currentUserId)
+                .orderBy("lastMessageTimestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Log.e(TAG, "getChatRooms error: " + error.getMessage());
+                        // Fallback if index is missing
+                        fetchRoomsWithoutOrder(currentUserId, roomsLiveData);
+                        return;
+                    }
+                    if (value != null) {
+                        roomsLiveData.setValue(value.toObjects(ChatRoom.class));
+                    }
+                });
+        return roomsLiveData;
+    }
+
+    private void fetchRoomsWithoutOrder(String uid, MutableLiveData<List<ChatRoom>> liveData) {
+        firestore.collection("chat_rooms")
+                .whereArrayContains("participantIds", uid)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Log.e(TAG, "fetchRoomsWithoutOrder error: " + error.getMessage());
+                        liveData.setValue(new ArrayList<>());
+                        return;
+                    }
+                    if (value != null) {
+                        liveData.setValue(value.toObjects(ChatRoom.class));
+                    }
+                });
+    }
+
+    // Get all users for starting new chat
+    public LiveData<List<User>> getAllUsers() {
+        MutableLiveData<List<User>> usersLiveData = new MutableLiveData<>();
+        String currentUserId = FirebaseAuth.getInstance().getUid();
+
+        firestore.collection("users")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<User> users = new ArrayList<>();
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : queryDocumentSnapshots) {
+                        User user = doc.toObject(User.class);
+                        if (user != null) {
+                            user.setId(doc.getId());
+                            // Fallback for different field names in DB
+                            if (user.getName() == null) user.setName(doc.getString("displayName"));
+                            if (user.getPhotoUrl() == null) user.setPhotoUrl(doc.getString("profileImageUrl"));
+                            
+                            if (currentUserId != null && !user.getId().equals(currentUserId)) {
+                                users.add(user);
+                            }
+                        }
+                    }
+                    usersLiveData.setValue(users);
+                })
+                .addOnFailureListener(e -> usersLiveData.setValue(new ArrayList<>()));
+        return usersLiveData;
+    }
+
+    public void getUser(String userId, UserListener listener) {
+        firestore.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    User user = documentSnapshot.toObject(User.class);
+                    if (user != null) {
+                        user.setId(documentSnapshot.getId());
+                        listener.onUserFound(user);
+                    } else {
+                        listener.onError(new Exception("User not found"));
+                    }
+                })
+                .addOnFailureListener(listener::onError);
+    }
+
+    // Listen for messages in a specific room (NOW USING FIRESTORE SUB-COLLECTION)
+    public void listenForMessages(String roomId, MessagesListener listener) {
+        firestore.collection("chat_rooms").document(roomId)
+                .collection("messages")
+                .orderBy("timestamp", Query.Direction.ASCENDING)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        listener.onError(error);
+                        return;
+                    }
+                    if (value != null) {
+                        listener.onMessages(value.toObjects(Message.class));
+                    }
+                });
+    }
+
+    // Send a message (NOW WRITING TO FIRESTORE ONLY)
+    public void sendMessage(String roomId, Message message) {
+        CollectionReference messagesRef = firestore.collection("chat_rooms")
+                .document(roomId).collection("messages");
+        
+        String msgId = messagesRef.document().getId();
+        message.setMessageId(msgId);
+        
+        // 1. Save message to Firestore sub-collection
+        messagesRef.document(msgId).set(message)
+                .addOnSuccessListener(aVoid -> {
+                    // 2. Update room metadata for the chat list view
+                    firestore.collection("chat_rooms").document(roomId)
+                            .update("lastMessage", message.getType().equals("IMAGE") ? "Photo" : 
+                                    (message.getType().equals("AUDIO") ? "Voice note" : message.getText()),
+                                    "lastMessageTimestamp", message.getTimestamp());
+                });
     }
 }
-

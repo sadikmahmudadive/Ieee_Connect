@@ -24,6 +24,9 @@ public class CloudinaryManager {
     }
 
     public static void upload(Uri fileUri, UploadCallback callback) {
-        MediaManager.get().upload(fileUri).callback(callback).dispatch();
+        MediaManager.get().upload(fileUri)
+                .option("resource_type", "auto")
+                .callback(callback)
+                .dispatch();
     }
 }

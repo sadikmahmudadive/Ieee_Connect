@@ -1,149 +1,93 @@
 package com.example.ieeeconnect.domain.model;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import com.google.firebase.firestore.IgnoreExtraProperties;
+import com.google.firebase.firestore.PropertyName;
 
+@IgnoreExtraProperties
 public class User {
-    @NonNull
     private String id;
-    @NonNull
     private String name;
-    @NonNull
     private String email;
-    @Nullable
     private String bio;
-    @Nullable
     private String photoUrl;
-    @Nullable
     private String coverUrl;
-    @Nullable
     private String username;
-    @Nullable
     private String dept;
-    @Nullable
     private String phone;
-    @Nullable
     private String gender;
+    private boolean isAdmin;
+    private String role;
+    private String fcmToken;
 
-    // --- ADMIN FIELDS ---
-    private boolean isAdmin; // true if user is admin
-    private String role; // e.g., SUPER_ADMIN, ADMIN, EXCOM, MEMBER
-
-    public User(@NonNull String id, @NonNull String name, @NonNull String email, @Nullable String bio, @Nullable String photoUrl) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.bio = bio;
-        this.photoUrl = photoUrl;
-    }
+    @PropertyName("displayName")
+    private String displayName;
+    
+    @PropertyName("profileImageUrl")
+    private String profileImageUrl;
 
     public User() {
         // Default constructor for Firebase
     }
 
-    @NonNull
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(@NonNull String id) {
-        this.id = id;
-    }
-
-    @NonNull
+    @PropertyName("name")
     public String getName() {
-        return name;
+        if (name != null && !name.isEmpty()) return name;
+        if (displayName != null && !displayName.isEmpty()) return displayName;
+        return "Member";
     }
+    
+    @PropertyName("name")
+    public void setName(String name) { this.name = name; }
 
-    public void setName(@NonNull String name) {
-        this.name = name;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    @NonNull
-    public String getEmail() {
-        return email;
-    }
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
 
-    public void setEmail(@NonNull String email) {
-        this.email = email;
-    }
-
-    @Nullable
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(@Nullable String bio) {
-        this.bio = bio;
-    }
-
-    @Nullable
+    @PropertyName("photoUrl")
     public String getPhotoUrl() {
-        return photoUrl;
+        if (photoUrl != null && !photoUrl.isEmpty()) return photoUrl;
+        return profileImageUrl;
     }
+    
+    @PropertyName("photoUrl")
+    public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
 
-    public void setPhotoUrl(@Nullable String photoUrl) {
-        this.photoUrl = photoUrl;
-    }
+    public String getCoverUrl() { return coverUrl; }
+    public void setCoverUrl(String coverUrl) { this.coverUrl = coverUrl; }
 
-    @Nullable
-    public String getCoverUrl() {
-        return coverUrl;
-    }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 
-    public void setCoverUrl(@Nullable String coverUrl) {
-        this.coverUrl = coverUrl;
-    }
+    public String getDept() { return dept; }
+    public void setDept(String dept) { this.dept = dept; }
 
-    @Nullable
-    public String getUsername() {
-        return username;
-    }
+    public String getPhone() { return phone; }
+    public void setPhone(String phone) { this.phone = phone; }
 
-    public void setUsername(@Nullable String username) {
-        this.username = username;
-    }
+    public String getGender() { return gender; }
+    public void setGender(String gender) { this.gender = gender; }
 
-    @Nullable
-    public String getDept() {
-        return dept;
-    }
+    public boolean isAdmin() { return isAdmin; }
+    public void setAdmin(boolean admin) { isAdmin = admin; }
 
-    public void setDept(@Nullable String dept) {
-        this.dept = dept;
-    }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
-    @Nullable
-    public String getPhone() {
-        return phone;
-    }
+    public String getFcmToken() { return fcmToken; }
+    public void setFcmToken(String fcmToken) { this.fcmToken = fcmToken; }
 
-    public void setPhone(@Nullable String phone) {
-        this.phone = phone;
-    }
+    @PropertyName("displayName")
+    public String getDisplayName() { return displayName; }
+    @PropertyName("displayName")
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
 
-    @Nullable
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(@Nullable String gender) {
-        this.gender = gender;
-    }
-
-    public boolean isAdmin() {
-        return isAdmin;
-    }
-
-    public void setAdmin(boolean admin) {
-        isAdmin = admin;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
+    @PropertyName("profileImageUrl")
+    public String getProfileImageUrl() { return profileImageUrl; }
+    @PropertyName("profileImageUrl")
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 }
