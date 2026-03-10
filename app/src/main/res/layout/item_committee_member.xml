@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:strokeWidth="0dp"
+    app:cardBackgroundColor="@color/surface">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="14dp"
+        android:gravity="center_horizontal">
+
+        <!-- Profile Image -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            app:cardCornerRadius="40dp"
+            app:cardElevation="2dp"
+            app:strokeWidth="2dp"
+            app:strokeColor="@color/primaryContainer"
+            android:layout_marginBottom="10dp">
+
+            <ImageView
+                android:id="@+id/ivMemberPhoto"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_profile_placeholder"
+                tools:ignore="ContentDescription" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Role Badge -->
+        <TextView
+            android:id="@+id/tvRole"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_role_badge"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="3dp"
+            android:textColor="@color/white"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:visibility="visible"
+            tools:text="CHAIRMAN" />
+
+        <!-- Name -->
+        <TextView
+            android:id="@+id/tvMemberName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:textColor="@color/onSurface"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:maxLines="2"
+            android:ellipsize="end"
+            tools:text="Dr. Ahmed Rahman" />
+
+        <!-- Designation -->
+        <TextView
+            android:id="@+id/tvDesignation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:textColor="@color/onSurfaceVariant"
+            android:textSize="12sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="Professor" />
+
+        <!-- Department -->
+        <TextView
+            android:id="@+id/tvDepartment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:gravity="center"
+            android:textColor="@color/onSurfaceVariant"
+            android:textSize="11sp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="CSE Department" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/surfaceVariant" />
+
+        <!-- Contact Buttons Row -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- Call Button -->
+            <ImageButton
+                android:id="@+id/btnCall"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginHorizontal="10dp"
+                android:background="@drawable/bg_circle_button"
+                android:src="@drawable/ic_call"
+                android:scaleType="centerInside"
+                android:padding="8dp"
+                android:contentDescription="@string/committee_call_member"
+                app:tint="@color/primary" />
+
+            <!-- Email Button -->
+            <ImageButton
+                android:id="@+id/btnEmail"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_marginHorizontal="10dp"
+                android:background="@drawable/bg_circle_button"
+                android:src="@drawable/ic_send"
+                android:scaleType="centerInside"
+                android:padding="8dp"
+                android:contentDescription="@string/committee_email_member"
+                app:tint="@color/primary" />
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
+

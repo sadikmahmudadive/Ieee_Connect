@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.ieeeconnect.databinding.ActivityDashboardBinding;
 import com.example.ieeeconnect.ui.admin.AdminDashboardFragment;
+import com.example.ieeeconnect.ui.committee.CommitteeFragment;
 import com.example.ieeeconnect.ui.events.EventsFragment;
 import com.example.ieeeconnect.ui.home.HomeFragment;
 import com.example.ieeeconnect.ui.profile.ProfileFragment;
@@ -22,8 +23,6 @@ public class DashboardActivity extends AppCompatActivity {
     private static final String TAG = "DashboardActivity";
 
     private ActivityDashboardBinding binding;
-    private boolean isAdmin = false;
-    private String role = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +38,9 @@ public class DashboardActivity extends AppCompatActivity {
 
         // First try: intent extras (backward-compatibility)
         if (getIntent() != null) {
-            isAdmin = getIntent().getBooleanExtra("isAdmin", false);
-            role = getIntent().getStringExtra("role");
-            boolean isAdminRole = role != null && ("ADMIN".equalsIgnoreCase(role) || "SUPER_ADMIN".equalsIgnoreCase(role));
+            boolean isAdmin = getIntent().getBooleanExtra("isAdmin", false);
+            String role = getIntent().getStringExtra("role");
+            boolean isAdminRole = "ADMIN".equalsIgnoreCase(role) || "SUPER_ADMIN".equalsIgnoreCase(role);
             if (isAdmin || isAdminRole) {
                 navView.setAdminVisible(true);
             }
@@ -65,14 +64,12 @@ public class DashboardActivity extends AppCompatActivity {
                             }
                             if (roleObj != null) docRole = roleObj.toString();
 
-                            boolean privileged = docIsAdmin || (docRole != null && ("ADMIN".equalsIgnoreCase(docRole) || "SUPER_ADMIN".equalsIgnoreCase(docRole) || "EXCOM".equalsIgnoreCase(docRole)));
-                            if (privileged) {
-                                navView.setAdminVisible(true);
-                            } else {
-                                navView.setAdminVisible(false);
-                            }
+                            boolean privileged = docIsAdmin
+                                    || "ADMIN".equalsIgnoreCase(docRole)
+                                    || "SUPER_ADMIN".equalsIgnoreCase(docRole)
+                                    || "EXCOM".equalsIgnoreCase(docRole);
+                            navView.setAdminVisible(privileged);
                         } else {
-                            // fallback: roles/committee checks could be added if needed
                             Log.d(TAG, "No user document found for uid=" + uid);
                         }
                     })
@@ -85,7 +82,6 @@ public class DashboardActivity extends AppCompatActivity {
             } else if (itemId == R.id.navigation_events) {
                 switchFragment(new EventsFragment());
             } else if (itemId == R.id.navigation_chat) {
-                // Chat fragment may be implemented elsewhere; for now stay on Home if missing
                 try {
                     Class<?> cls = Class.forName("com.example.ieeeconnect.ui.chat.ChatFragment");
                     Fragment f = (Fragment) cls.newInstance();
@@ -95,6 +91,8 @@ public class DashboardActivity extends AppCompatActivity {
                 }
             } else if (itemId == R.id.navigation_profile) {
                 switchFragment(new ProfileFragment());
+            } else if (itemId == R.id.navigation_committee) {
+                switchFragment(new CommitteeFragment());
             } else if (itemId == R.id.navigation_admin) {
                 switchFragment(new AdminDashboardFragment());
             }
@@ -112,10 +110,11 @@ public class DashboardActivity extends AppCompatActivity {
         tx.commit();
     }
 
+    /**
+     * Called by AdminDashboardFragment when the user should leave admin mode.
+     */
     public void exitAdminMode() {
-        // Hide admin tab
         binding.customBottomNavView.setAdminVisible(false);
-        // If currently showing AdminDashboardFragment, switch to HomeFragment
         Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         if (current instanceof AdminDashboardFragment) {
             switchFragment(new HomeFragment());

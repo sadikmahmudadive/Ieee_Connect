@@ -6,7 +6,7 @@
     <!-- Profile fragment strings -->
     <string name="cd_cover_image">Cover image</string>
     <string name="profile_name_default">Gwen Stacy</string>
-    <string name="profile_username_default">@gwen_stacy</string>
+    <string name="profile_username_default">\@gwen_stacy</string>
     <string name="profile_email_default">ex@gmail.com</string>
     <string name="action_edit_profile">Edit Profile</string>
     <string name="action_share_profile">Share Profile</string>
@@ -88,6 +88,24 @@
     <string name="signing_in">Signing in…</string>
     <string name="log_in">Log in</string>
     <string name="starting_now">Starting now</string>
+
+    <!-- Committee strings -->
+    <string name="committee_subtitle">Meet our team members and leaders</string>
+    <string name="committee_search_hint">Search members…</string>
+    <string name="committee_empty_title">No members found</string>
+    <string name="committee_empty_subtitle">Try adjusting your search or filter</string>
+    <string name="committee_call_member">Call member</string>
+    <string name="committee_email_member">Email member</string>
+
+    <!-- Team strings -->
+    <string name="team_title">Our Team</string>
+    <string name="team_subtitle">IEEE BUBT Student Branch Executive Body</string>
+    <string name="team_empty">No team members to display</string>
+
+    <!-- Calendar strings -->
+    <string name="calendar_title">Event Calendar</string>
+    <string name="calendar_subtitle">Upcoming events and deadlines</string>
+    <string name="calendar_no_events">No events on this date</string>
 
     <!-- Google Sign-In -->
     <string name="default_web_client_id">666484358048-pvj5emao73odqo8i59mirkeodvq0m69v.apps.googleusercontent.com</string>
