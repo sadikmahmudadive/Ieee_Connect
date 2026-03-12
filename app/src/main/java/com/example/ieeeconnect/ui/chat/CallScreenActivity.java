@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat;
 import com.bumptech.glide.Glide;
 import com.example.ieeeconnect.R;
 import com.example.ieeeconnect.databinding.ActivityCallScreenBinding;
+import com.example.ieeeconnect.util.StorageImageLoader;
 
 import io.agora.rtc2.Constants;
 import io.agora.rtc2.IRtcEngineEventHandler;
@@ -68,10 +69,7 @@ public class CallScreenActivity extends AppCompatActivity {
 
     private void setupUI() {
         binding.callerName.setText(remoteUserName);
-        Glide.with(this)
-                .load(remoteUserImage)
-                .placeholder(R.drawable.ic_profile_placeholder)
-                .into(binding.callerImage);
+        StorageImageLoader.load(binding.callerImage, remoteUserImage, null, null, R.drawable.ic_profile_placeholder);
 
         binding.btnEndCall.setOnClickListener(v -> endCall());
         binding.btnMute.setOnClickListener(v -> toggleMute());

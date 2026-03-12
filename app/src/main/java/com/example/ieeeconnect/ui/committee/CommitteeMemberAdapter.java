@@ -12,9 +12,12 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.ieeeconnect.R;
 import com.example.ieeeconnect.model.CommitteeMember;
+import com.example.ieeeconnect.util.StorageImageLoader;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CommitteeMemberAdapter extends ListAdapter<CommitteeMember, CommitteeMemberAdapter.MemberViewHolder> {
 
@@ -25,6 +28,8 @@ public class CommitteeMemberAdapter extends ListAdapter<CommitteeMember, Committ
     }
 
     private final OnMemberActionListener listener;
+    // cache for resolved photo URLs
+    private final Map<String, String> photoCache = new HashMap<>();
 
     public CommitteeMemberAdapter(OnMemberActionListener listener) {
         super(DIFF_CALLBACK);
@@ -122,18 +127,9 @@ public class CommitteeMemberAdapter extends ListAdapter<CommitteeMember, Committ
                 tvRole.setVisibility(View.GONE);
             }
 
-            // Load photo with Glide
+            // Load photo with StorageImageLoader
             String photoUrl = member.getPhotoUrl();
-            if (photoUrl != null && !photoUrl.isEmpty()) {
-                Glide.with(ivMemberPhoto.getContext())
-                        .load(photoUrl)
-                        .placeholder(R.drawable.ic_profile_placeholder)
-                        .error(R.drawable.ic_profile_placeholder)
-                        .circleCrop()
-                        .into(ivMemberPhoto);
-            } else {
-                ivMemberPhoto.setImageResource(R.drawable.ic_profile_placeholder);
-            }
+            StorageImageLoader.load(ivMemberPhoto, photoUrl, CommitteeMemberAdapter.this.photoCache, member.getUid(), R.drawable.ic_profile_placeholder);
 
             // Click listeners
             btnCall.setOnClickListener(v -> {
@@ -148,4 +144,3 @@ public class CommitteeMemberAdapter extends ListAdapter<CommitteeMember, Committ
         }
     }
 }
-

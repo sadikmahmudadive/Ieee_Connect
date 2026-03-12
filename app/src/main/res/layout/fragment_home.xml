@@ -16,22 +16,13 @@
         android:elevation="2dp"
         app:title="">
 
-        <ImageView
-            android:id="@+id/toolbarLogo"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_gravity="start"
-            android:layout_marginStart="4dp"
-            android:contentDescription="@string/logo_desc"
-            android:src="@drawable/ic_ieee_logo" />
-
         <TextView
             android:id="@+id/toolbarAppName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:text="IEEE Connect"
-            android:textColor="@color/onSurface"
+            android:text="@string/app_name"
+            android:textColor="@color/primary"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -111,7 +102,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Discover what\u0027s happening at IEEE BUBT"
+                        android:text="@string/home_sub_greeting"
                         android:textColor="@color/onSurfaceVariant"
                         android:textSize="14sp" />
                 </LinearLayout>
@@ -155,9 +146,9 @@
                             android:background="@drawable/bg_role_badge"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="3dp"
-                            android:text="UPCOMING"
+                            android:text="@string/label_upcoming"
                             android:textColor="@color/white"
-                            android:textSize="10sp"
+                            android:textSize="11sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -234,7 +225,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginBottom="8dp"
-                        android:text="Featured Events"
+                        android:text="@string/label_featured_events"
                         android:textColor="@color/onSurface"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -257,7 +248,7 @@
                     android:layout_marginStart="16dp"
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="8dp"
-                    android:text="Recent Events"
+                    android:text="@string/label_recent_events"
                     android:textColor="@color/onSurface"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -327,7 +318,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:gravity="center"
-                        android:text="No events yet"
+                        android:text="@string/empty_no_events_title"
                         android:textColor="@color/onSurface"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -337,7 +328,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
                         android:gravity="center"
-                        android:text="Check back soon for upcoming events"
+                        android:text="@string/empty_no_events_subtitle"
                         android:textColor="@color/onSurfaceVariant"
                         android:textSize="14sp" />
                 </LinearLayout>

@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.ieeeconnect.R;
 import com.example.ieeeconnect.domain.model.Message;
+import com.example.ieeeconnect.util.StorageImageLoader;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -34,10 +35,10 @@ public class MessageAdapter extends ListAdapter<Message, RecyclerView.ViewHolder
     private static final int TYPE_RECEIVED = 2;
     private final String currentUserId = FirebaseAuth.getInstance().getUid();
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
-    
+
     // Cache for user profile images to avoid redundant Firestore calls
     private final Map<String, String> userPhotoCache = new HashMap<>();
-    
+
     private MediaPlayer mediaPlayer;
     private int currentPlayingPosition = -1;
 
@@ -177,7 +178,8 @@ public class MessageAdapter extends ListAdapter<Message, RecyclerView.ViewHolder
 
             if (userPhotoCache.containsKey(senderId)) {
                 String url = userPhotoCache.get(senderId);
-                loadAvatarSafely(url);
+                // Use StorageImageLoader to handle both http and storage paths
+                StorageImageLoader.load(senderImage, url, userPhotoCache, senderId, R.drawable.ic_profile_placeholder);
             } else {
                 firestore.collection("users").document(senderId).get()
                         .addOnSuccessListener(doc -> {
@@ -189,13 +191,14 @@ public class MessageAdapter extends ListAdapter<Message, RecyclerView.ViewHolder
                                 if (photoUrl == null || photoUrl.isEmpty()) photoUrl = doc.getString("avatarUrl");
 
                                 userPhotoCache.put(senderId, photoUrl);
-                                loadAvatarSafely(photoUrl);
+                                StorageImageLoader.load(senderImage, photoUrl, userPhotoCache, senderId, R.drawable.ic_profile_placeholder);
                             }
                         });
             }
         }
 
         private void loadAvatarSafely(String url) {
+            // kept for compatibility but not used now; delegate to StorageImageLoader when needed
             if (url != null && !url.isEmpty()) {
                 try {
                     Glide.with(senderImage)

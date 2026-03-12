@@ -10,14 +10,18 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.ieeeconnect.R;
 import com.example.ieeeconnect.domain.model.User;
+import com.example.ieeeconnect.util.StorageImageLoader;
 import com.google.android.material.imageview.ShapeableImageView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserSelectionAdapter extends ListAdapter<User, UserSelectionAdapter.ViewHolder> {
 
     private final OnUserClickListener listener;
+    private final Map<String, String> photoCache = new HashMap<>();
 
     public interface OnUserClickListener {
         void onUserClick(User user);
@@ -51,7 +55,7 @@ public class UserSelectionAdapter extends ListAdapter<User, UserSelectionAdapter
         holder.bind(getItem(position), listener);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
         private final ShapeableImageView userImage;
         private final TextView userName;
         private final TextView userEmail;
@@ -66,10 +70,8 @@ public class UserSelectionAdapter extends ListAdapter<User, UserSelectionAdapter
         public void bind(User user, OnUserClickListener listener) {
             userName.setText(user.getName());
             userEmail.setText(user.getEmail());
-            Glide.with(itemView.getContext())
-                    .load(user.getPhotoUrl())
-                    .placeholder(R.drawable.ic_profile_placeholder)
-                    .into(userImage);
+            // Use StorageImageLoader via adapter-level photoCache
+            StorageImageLoader.load(userImage, user.getPhotoUrl(), UserSelectionAdapter.this.photoCache, user.getId(), R.drawable.ic_profile_placeholder);
 
             itemView.setOnClickListener(v -> listener.onUserClick(user));
         }

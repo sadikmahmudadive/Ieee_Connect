@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- Required on Android 13+ to post notifications at runtime -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <queries>
         <package android:name="com.google.android.gms" />
@@ -24,6 +26,9 @@
             <data android:scheme="https" />
         </intent>
     </queries>
+
+    <!-- Declare camera feature as not required since app requests CAMERA permission -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 
     <application
         android:name=".MyApplication"
@@ -69,11 +74,12 @@
 
         <service
             android:name=".data.remote.FCMService"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
+
 
         <provider
             android:name="androidx.core.content.FileProvider"

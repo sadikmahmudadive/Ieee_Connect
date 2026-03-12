@@ -83,7 +83,6 @@ public class HomeFragment extends Fragment {
 
     private void setupToolbar() {
         binding.topAppBar.setTitle("");
-        binding.toolbarLogo.setImageResource(R.drawable.ic_ieee_logo);
 
         binding.toolbarSearch.setOnClickListener(v -> {
             // Navigate to Events tab with search focus

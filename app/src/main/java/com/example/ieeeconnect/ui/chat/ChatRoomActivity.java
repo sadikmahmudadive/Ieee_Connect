@@ -36,6 +36,7 @@ import com.example.ieeeconnect.data.remote.CloudinaryManager;
 import com.example.ieeeconnect.data.remote.FCMClient;
 import com.example.ieeeconnect.databinding.ActivityChatRoomBinding;
 import com.example.ieeeconnect.domain.model.User;
+import com.example.ieeeconnect.util.StorageImageLoader;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
@@ -142,12 +143,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         binding.roomName.setText(roomName != null ? roomName : "Chat");
 
         if (roomImage != null && !roomImage.isEmpty()) {
-            Glide.with(this)
-                    .load(roomImage)
-                    .placeholder(R.drawable.ic_profile_placeholder)
-                    .error(R.drawable.ic_profile_placeholder)
-                    .circleCrop()
-                    .into(binding.roomImage);
+            // resolve storage path and load image (no persistent cache here)
+            StorageImageLoader.load(binding.roomImage, roomImage, null, null, R.drawable.ic_profile_placeholder);
         } else {
             binding.roomImage.setImageResource(R.drawable.ic_profile_placeholder);
         }

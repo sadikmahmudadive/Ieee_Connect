@@ -16,14 +16,16 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
 import com.example.ieeeconnect.R;
+import com.example.ieeeconnect.util.StorageImageLoader;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Displays the IEEE BUBT Student Branch executive team.
@@ -139,6 +141,8 @@ public class TeamFragment extends Fragment {
 
     private class TeamAdapter extends RecyclerView.Adapter<TeamAdapter.VH> {
         private List<TeamMember> members = new ArrayList<>();
+        // cache for resolved team member photos
+        private final Map<String, String> photoCache = new HashMap<>();
 
         void setMembers(List<TeamMember> list) {
             this.members = list;
@@ -179,15 +183,8 @@ public class TeamFragment extends Fragment {
                 tvRole.setText(member.getRole());
                 tvInfo.setText(member.getInfo());
 
-                if (member.getPhotoUrl() != null && !member.getPhotoUrl().isEmpty()) {
-                    Glide.with(photo.getContext())
-                            .load(member.getPhotoUrl())
-                            .placeholder(R.drawable.ic_profile_placeholder)
-                            .circleCrop()
-                            .into(photo);
-                } else {
-                    photo.setImageResource(R.drawable.ic_profile_placeholder);
-                }
+                // Load photo via StorageImageLoader to support firebase storage paths and caching
+                StorageImageLoader.load(photo, member.getPhotoUrl(), TeamAdapter.this.photoCache, member.getEmail() != null ? member.getEmail() : member.getName(), R.drawable.ic_profile_placeholder);
 
                 btnEmail.setOnClickListener(v -> {
                     if (member.getEmail() != null && !member.getEmail().isEmpty()) {

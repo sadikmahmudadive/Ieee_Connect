@@ -82,6 +82,14 @@
     <string name="btn_interested">Interested</string>
     <string name="search">Search</string>
 
+    <!-- Home fragment additional strings -->
+    <string name="home_sub_greeting">Discover what\'s happening at IEEE BUBT</string>
+    <string name="label_upcoming">UPCOMING</string>
+    <string name="label_featured_events">Featured Events</string>
+    <string name="label_recent_events">Recent Events</string>
+    <string name="empty_no_events_title">No events yet</string>
+    <string name="empty_no_events_subtitle">Check back soon for upcoming events</string>
+
     <!-- Missing strings referenced in LoginActivity and HomeFragment -->
     <string name="error_email_required">Email is required</string>
     <string name="error_password_required">Password is required</string>

@@ -14,11 +14,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.ieeeconnect.R;
 import com.example.ieeeconnect.domain.model.ChatRoom;
+import com.example.ieeeconnect.util.StorageImageLoader;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -151,11 +150,12 @@ public class ChatHubAdapter extends ListAdapter<ChatRoom, ChatHubAdapter.ViewHol
                 }
                 if (cachedPhoto != null && !cachedPhoto.isEmpty()) {
                     if (cachedPhoto.startsWith("http")) {
-                        loadAvatar(cachedPhoto);
+                        StorageImageLoader.load(roomImage, cachedPhoto, photoCache, otherUserId, R.drawable.ic_profile_placeholder);
                         room.setRoomImage(cachedPhoto);
                     } else {
                         // Resolve stored path to download URL
-                        resolveStoragePhotoAndLoad(otherUserId, cachedPhoto, room);
+                        StorageImageLoader.load(roomImage, cachedPhoto, photoCache, otherUserId, R.drawable.ic_profile_placeholder);
+                        room.setRoomImage(cachedPhoto);
                     }
                 } else {
                     // No photo known — keep placeholder
@@ -206,57 +206,18 @@ public class ChatHubAdapter extends ListAdapter<ChatRoom, ChatHubAdapter.ViewHol
                         // If it's already an HTTP/HTTPS URL, use directly and cache it
                         if (photo.startsWith("http")) {
                             photoCache.put(uid, photo);
-                            loadAvatar(photo);
+                            StorageImageLoader.load(roomImage, photo, photoCache, uid, R.drawable.ic_profile_placeholder);
                             room.setRoomImage(photo);
                             return;
                         }
 
                         // Otherwise attempt to resolve via Firebase Storage (supports gs://, storage URLs, and relative paths)
-                        resolveStoragePhotoAndLoad(uid, photo, room);
+                        StorageImageLoader.load(roomImage, photo, photoCache, uid, R.drawable.ic_profile_placeholder);
+                        // roomImage will be set by the loader when resolved; set room image tag to photoPath for now
+                        room.setRoomImage(photo);
 
                     })
                     .addOnFailureListener(e -> Log.w(TAG, "Failed to fetch user " + uid, e));
-        }
-
-        private void resolveStoragePhotoAndLoad(String uid, String photoPath, ChatRoom room) {
-            if (photoPath == null || photoPath.isEmpty()) {
-                roomImage.setImageResource(R.drawable.ic_profile_placeholder);
-                return;
-            }
-            FirebaseStorage storage = FirebaseStorage.getInstance();
-            StorageReference ref;
-            try {
-                if (photoPath.startsWith("gs://") || photoPath.contains("firebasestorage.googleapis.com")) {
-                    ref = storage.getReferenceFromUrl(photoPath);
-                } else {
-                    // Treat as a relative path within default bucket
-                    ref = storage.getReference().child(photoPath);
-                }
-            } catch (Exception e) {
-                Log.w(TAG, "Invalid storage reference for path: " + photoPath, e);
-                roomImage.setImageResource(R.drawable.ic_profile_placeholder);
-                // cache null to avoid repeated attempts
-                // Note: photoCache is accessed from outer class; but here it's static inner — use Photo cache via reflection? Instead, skip caching here to be safe.
-                return;
-            }
-
-            final String myBoundRoom = boundRoomId;
-            final String finalUid = uid;
-            ref.getDownloadUrl()
-                    .addOnSuccessListener(uri -> {
-                        String finalUrl = uri.toString();
-                        try { /* update cache in outer adapter via reflection is not possible here; but photoCache is captured in bind and passed - however this method doesn't have it. */ } catch (Exception ignored) {}
-                        // If view recycled, abort
-                        if (!myBoundRoom.equals(boundRoomId)) return;
-                        // Cache by writing to photoCache via a small hack: attempt to set tag on itemView so next bind won't re-resolve. Simpler: set roomImage tag to resolved url
-                        roomImage.setTag(finalUrl);
-                        loadAvatar(finalUrl);
-                        room.setRoomImage(finalUrl);
-                    })
-                    .addOnFailureListener(e -> {
-                        Log.w(TAG, "Failed to resolve storage url for user " + uid + " (" + photoPath + ")", e);
-                        if (myBoundRoom.equals(boundRoomId)) roomImage.setImageResource(R.drawable.ic_profile_placeholder);
-                    });
         }
 
         private void handleGroupChat(ChatRoom room) {
