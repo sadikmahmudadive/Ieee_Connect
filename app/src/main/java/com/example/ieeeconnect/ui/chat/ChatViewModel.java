@@ -66,4 +66,10 @@ public class ChatViewModel extends ViewModel {
 
         repository.sendMessage(currentRoomId, message);
     }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        repository.cleanup();
+    }
 }

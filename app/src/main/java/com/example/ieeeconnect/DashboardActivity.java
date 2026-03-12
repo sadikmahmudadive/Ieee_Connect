@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.ieeeconnect.databinding.ActivityDashboardBinding;
 import com.example.ieeeconnect.ui.admin.AdminDashboardFragment;
+import com.example.ieeeconnect.ui.chat.ChatFragment;
 import com.example.ieeeconnect.ui.committee.CommitteeFragment;
 import com.example.ieeeconnect.ui.events.EventsFragment;
 import com.example.ieeeconnect.ui.home.HomeFragment;
@@ -23,6 +24,15 @@ public class DashboardActivity extends AppCompatActivity {
     private static final String TAG = "DashboardActivity";
 
     private ActivityDashboardBinding binding;
+
+    // Cached fragment instances to prevent re-creation on every tab switch
+    private final HomeFragment homeFragment = new HomeFragment();
+    private final EventsFragment eventsFragment = new EventsFragment();
+    private final ChatFragment chatFragment = new ChatFragment();
+    private final CommitteeFragment committeeFragment = new CommitteeFragment();
+    private final ProfileFragment profileFragment = new ProfileFragment();
+    private AdminDashboardFragment adminFragment;
+    private Fragment activeFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,38 +86,53 @@ public class DashboardActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> Log.w(TAG, "Failed to fetch user role: " + e.getMessage()));
         }
 
+        // Add all fragments initially, hide all except home
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, homeFragment, "home")
+                    .add(R.id.fragment_container, eventsFragment, "events").hide(eventsFragment)
+                    .add(R.id.fragment_container, chatFragment, "chat").hide(chatFragment)
+                    .add(R.id.fragment_container, committeeFragment, "committee").hide(committeeFragment)
+                    .add(R.id.fragment_container, profileFragment, "profile").hide(profileFragment)
+                    .commit();
+            activeFragment = homeFragment;
+        }
+
         navView.setOnNavigationItemSelectedListener(itemId -> {
             if (itemId == R.id.navigation_home) {
-                switchFragment(new HomeFragment());
+                switchTo(homeFragment);
             } else if (itemId == R.id.navigation_events) {
-                switchFragment(new EventsFragment());
+                switchTo(eventsFragment);
             } else if (itemId == R.id.navigation_chat) {
-                try {
-                    Class<?> cls = Class.forName("com.example.ieeeconnect.ui.chat.ChatFragment");
-                    Fragment f = (Fragment) cls.newInstance();
-                    switchFragment(f);
-                } catch (Exception e) {
-                    switchFragment(new HomeFragment());
-                }
+                switchTo(chatFragment);
             } else if (itemId == R.id.navigation_profile) {
-                switchFragment(new ProfileFragment());
+                switchTo(profileFragment);
             } else if (itemId == R.id.navigation_committee) {
-                switchFragment(new CommitteeFragment());
+                switchTo(committeeFragment);
             } else if (itemId == R.id.navigation_admin) {
-                switchFragment(new AdminDashboardFragment());
+                if (adminFragment == null) {
+                    adminFragment = new AdminDashboardFragment();
+                    getSupportFragmentManager().beginTransaction()
+                            .add(R.id.fragment_container, adminFragment, "admin")
+                            .hide(adminFragment)
+                            .commit();
+                }
+                switchTo(adminFragment);
             }
         });
-
-        // Default selection -> Home
-        if (savedInstanceState == null) {
-            switchFragment(new HomeFragment());
-        }
     }
 
-    private void switchFragment(Fragment fragment) {
+    /**
+     * Show/hide fragments instead of replacing — preserves state, prevents
+     * chat list reload, event list flash, etc.
+     */
+    private void switchTo(Fragment target) {
+        if (target == activeFragment) return;
         FragmentTransaction tx = getSupportFragmentManager().beginTransaction();
-        tx.replace(R.id.fragment_container, fragment);
+        tx.hide(activeFragment);
+        tx.show(target);
         tx.commit();
+        activeFragment = target;
     }
 
     /**
@@ -115,9 +140,8 @@ public class DashboardActivity extends AppCompatActivity {
      */
     public void exitAdminMode() {
         binding.customBottomNavView.setAdminVisible(false);
-        Fragment current = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        if (current instanceof AdminDashboardFragment) {
-            switchFragment(new HomeFragment());
+        if (activeFragment instanceof AdminDashboardFragment) {
+            switchTo(homeFragment);
             binding.customBottomNavView.selectTab(0);
         }
     }

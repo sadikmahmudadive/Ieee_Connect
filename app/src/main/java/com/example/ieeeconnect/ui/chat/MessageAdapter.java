@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.ieeeconnect.R;
 import com.example.ieeeconnect.domain.model.Message;
-import com.example.ieeeconnect.domain.model.User;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -171,30 +170,43 @@ public class MessageAdapter extends ListAdapter<Message, RecyclerView.ViewHolder
         }
 
         private void loadSenderPhoto(String senderId) {
+            // Reset to placeholder immediately
+            senderImage.setImageResource(R.drawable.ic_profile_placeholder);
+
+            if (senderId == null || senderId.isEmpty()) return;
+
             if (userPhotoCache.containsKey(senderId)) {
                 String url = userPhotoCache.get(senderId);
-                Glide.with(itemView.getContext())
-                        .load(url)
-                        .placeholder(R.drawable.ic_profile_placeholder)
-                        .circleCrop()
-                        .into(senderImage);
+                loadAvatarSafely(url);
             } else {
-                // Fetch from Firestore
                 firestore.collection("users").document(senderId).get()
                         .addOnSuccessListener(doc -> {
                             if (doc.exists()) {
-                                User user = doc.toObject(User.class);
-                                if (user != null) {
-                                    String photoUrl = user.getPhotoUrl();
-                                    userPhotoCache.put(senderId, photoUrl);
-                                    Glide.with(itemView.getContext())
-                                            .load(photoUrl)
-                                            .placeholder(R.drawable.ic_profile_placeholder)
-                                            .circleCrop()
-                                            .into(senderImage);
-                                }
+                                // Try multiple possible field names
+                                String photoUrl = doc.getString("photoUrl");
+                                if (photoUrl == null || photoUrl.isEmpty()) photoUrl = doc.getString("profileImageUrl");
+                                if (photoUrl == null || photoUrl.isEmpty()) photoUrl = doc.getString("imageUrl");
+                                if (photoUrl == null || photoUrl.isEmpty()) photoUrl = doc.getString("avatarUrl");
+
+                                userPhotoCache.put(senderId, photoUrl);
+                                loadAvatarSafely(photoUrl);
                             }
                         });
+            }
+        }
+
+        private void loadAvatarSafely(String url) {
+            if (url != null && !url.isEmpty()) {
+                try {
+                    Glide.with(senderImage)
+                            .load(url)
+                            .placeholder(R.drawable.ic_profile_placeholder)
+                            .error(R.drawable.ic_profile_placeholder)
+                            .circleCrop()
+                            .into(senderImage);
+                } catch (Exception e) {
+                    senderImage.setImageResource(R.drawable.ic_profile_placeholder);
+                }
             }
         }
     }

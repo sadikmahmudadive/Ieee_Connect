@@ -2,6 +2,8 @@ package com.example.ieeeconnect.ui.chat;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +17,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.ieeeconnect.databinding.FragmentChatHubBinding;
 import com.example.ieeeconnect.domain.model.ChatRoom;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 public class ChatFragment extends Fragment {
 
     private FragmentChatHubBinding binding;
     private ChatHubViewModel viewModel;
     private ChatHubAdapter adapter;
+    private List<ChatRoom> allRooms = new ArrayList<>();
+    private boolean hasLoaded = false;
 
     @Nullable
     @Override
@@ -34,6 +42,7 @@ public class ChatFragment extends Fragment {
 
         setupRecyclerView();
         setupViewModel();
+        setupSearch();
         setupListeners();
     }
 
@@ -52,17 +61,50 @@ public class ChatFragment extends Fragment {
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(ChatHubViewModel.class);
         binding.loader.setVisibility(View.VISIBLE);
-        
+
         viewModel.getChatRooms().observe(getViewLifecycleOwner(), chatRooms -> {
+            if (binding == null) return;
             binding.loader.setVisibility(View.GONE);
-            if (chatRooms != null && !chatRooms.isEmpty()) {
-                adapter.submitList(chatRooms);
-                binding.chatListRecycler.setVisibility(View.VISIBLE);
-            } else {
-                // If list is empty, show no chats yet
-                binding.chatListRecycler.setVisibility(View.GONE);
-            }
+            hasLoaded = true;
+            allRooms = chatRooms != null ? chatRooms : new ArrayList<>();
+            applySearchFilter();
         });
+    }
+
+    private void setupSearch() {
+        binding.etSearch.addTextChangedListener(new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
+                applySearchFilter();
+            }
+            @Override public void afterTextChanged(Editable s) {}
+        });
+    }
+
+    private void applySearchFilter() {
+        String query = binding.etSearch.getText() != null
+                ? binding.etSearch.getText().toString().trim().toLowerCase(Locale.getDefault())
+                : "";
+
+        List<ChatRoom> filtered;
+        if (query.isEmpty()) {
+            filtered = allRooms;
+        } else {
+            filtered = new ArrayList<>();
+            for (ChatRoom room : allRooms) {
+                String name = room.getRoomName() != null ? room.getRoomName().toLowerCase(Locale.getDefault()) : "";
+                String msg = room.getLastMessage() != null ? room.getLastMessage().toLowerCase(Locale.getDefault()) : "";
+                if (name.contains(query) || msg.contains(query)) {
+                    filtered.add(room);
+                }
+            }
+        }
+
+        boolean isEmpty = filtered.isEmpty();
+        binding.chatListRecycler.setVisibility(isEmpty ? View.GONE : View.VISIBLE);
+        // Only show empty state after we've loaded data at least once
+        binding.emptyState.setVisibility(isEmpty && hasLoaded ? View.VISIBLE : View.GONE);
+        adapter.submitList(filtered);
     }
 
     private void setupListeners() {
@@ -76,5 +118,14 @@ public class ChatFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        // When fragment becomes visible again, force adapter to rebind (reload avatars)
+        if (!hidden && adapter != null && binding != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 }

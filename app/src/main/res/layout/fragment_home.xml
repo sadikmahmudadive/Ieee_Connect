@@ -7,30 +7,34 @@
     android:background="@color/background"
     tools:context="com.example.ieeeconnect.ui.home.HomeFragment">
 
-    <!-- Top app bar / toolbar -->
+    <!-- Top app bar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/top_app_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.Material3.ActionBar"
-        app:title=""
-        app:titleCentered="false"
+        android:layout_height="?attr/actionBarSize"
         android:background="@color/surface"
-        android:elevation="4dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="0dp">
+        android:elevation="2dp"
+        app:title="">
 
-        <!-- IEEE BUBT Logo -->
         <ImageView
             android:id="@+id/toolbarLogo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_gravity="start"
+            android:layout_marginStart="4dp"
             android:contentDescription="@string/logo_desc"
-            android:padding="8dp"
             android:src="@drawable/ic_ieee_logo" />
 
-        <!-- Search Icon -->
+        <TextView
+            android:id="@+id/toolbarAppName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="IEEE Connect"
+            android:textColor="@color/onSurface"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
         <ImageView
             android:id="@+id/toolbarSearch"
             android:layout_width="wrap_content"
@@ -38,11 +42,10 @@
             android:layout_gravity="end"
             android:contentDescription="@string/search_desc"
             android:padding="8dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="8dp"
             android:src="@drawable/ic_search"
             app:tint="@color/onSurfaceVariant" />
 
-        <!-- Notification Icon -->
         <ImageView
             android:id="@+id/toolbarNotification"
             android:layout_width="wrap_content"
@@ -60,154 +63,287 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?attr/colorError"
+        android:gravity="center"
         android:padding="4dp"
         android:text="@string/offline_banner_text"
         android:textColor="?attr/colorOnError"
-        android:visibility="gone"
-        android:gravity="center"
-        android:layout_marginTop="56dp"
-        android:elevation="2dp" />
+        android:textSize="12sp"
+        android:visibility="gone" />
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipe_refresh"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="0dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:ignore="MissingClass">
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <LinearLayout
-            android:orientation="vertical"
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/background"
-            android:paddingTop="8dp"
-            android:paddingBottom="0dp">
+            android:fillViewport="true"
+            android:clipToPadding="false"
+            android:paddingBottom="80dp">
 
-            <!-- Hero banner for upcoming event -->
-            <FrameLayout
-                android:id="@+id/hero_container"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:elevation="10dp"
-                android:layout_marginStart="12dp"
-                android:layout_marginEnd="12dp"
-                android:layout_marginTop="8dp">
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-                <ImageView
-                    android:id="@+id/hero_banner"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:contentDescription="@string/hero_banner_desc"
-                    android:src="@drawable/ic_launcher_background"
-                    android:background="@color/surfaceVariant" />
-
-                <!-- Gradient overlay for text readability -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/gradient_overlay" />
-
+                <!-- Greeting -->
                 <LinearLayout
-                    android:orientation="vertical"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="12dp"
-                    android:gravity="bottom">
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="4dp">
 
                     <TextView
-                        android:id="@+id/hero_title"
+                        android:id="@+id/tvGreeting"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Example"
-                        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-                        android:textColor="#FFFFFF" />
+                        android:textColor="@color/onSurface"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        tools:text="Good morning, Karim 👋" />
 
                     <TextView
-                        android:id="@+id/hero_countdown"
+                        android:id="@+id/tvSubGreeting"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Starts in 00:00:00"
-                        android:textColor="#FFFFFF"
-                        android:layout_marginTop="6dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/hero_register"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Register Now"
-                        style="@style/Widget.MaterialComponents.Button"
-                        android:layout_marginTop="8dp"
-                        app:cornerRadius="20dp"
-                        app:iconGravity="textStart"
-                        android:backgroundTint="?attr/colorPrimary"
-                        android:textColor="@color/white" />
-
+                        android:layout_marginTop="2dp"
+                        android:text="Discover what\u0027s happening at IEEE BUBT"
+                        android:textColor="@color/onSurfaceVariant"
+                        android:textSize="14sp" />
                 </LinearLayout>
-            </FrameLayout>
 
-            <!-- Featured horizontal carousel -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/featured_recycler"
-                android:layout_width="match_parent"
-                android:layout_height="160dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"
-                android:background="@color/background"
-                android:clipToPadding="false"
-                android:orientation="horizontal"
-                android:overScrollMode="never"
-                android:paddingStart="8dp"
-                android:paddingEnd="8dp"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                <!-- Hero banner for next upcoming event -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/hero_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="12dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp"
+                    android:visibility="gone">
 
-            <com.facebook.shimmer.ShimmerFrameLayout
-                android:id="@+id/shimmer"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:layout_marginTop="8dp"
-                android:background="@color/background"
-                app:shimmer_auto_start="true">
+                    <ImageView
+                        android:id="@+id/hero_banner"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@string/hero_banner_desc"
+                        android:src="@drawable/ic_launcher_background" />
 
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/gradient_overlay" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="bottom"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:id="@+id/hero_label"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_role_badge"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="3dp"
+                            android:text="UPCOMING"
+                            android:textColor="@color/white"
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/hero_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textColor="#FFFFFF"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:maxLines="2"
+                            android:ellipsize="end"
+                            tools:text="AI and Machine Learning Workshop" />
+
+                        <TextView
+                            android:id="@+id/hero_countdown"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:textColor="#DDFFFFFF"
+                            android:textSize="13sp"
+                            tools:text="Starts in 02:14:30" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/hero_register"
+                            style="@style/Widget.Material3.Button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="36dp"
+                            android:layout_marginTop="8dp"
+                            android:backgroundTint="@color/white"
+                            android:text="@string/register_now"
+                            android:textColor="@color/primary"
+                            android:textSize="12sp"
+                            app:cornerRadius="18dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Category filter chips -->
+                <HorizontalScrollView
+                    android:id="@+id/chipScrollView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:scrollbars="none"
+                    android:clipToPadding="false"
+                    android:paddingHorizontal="12dp">
+
+                    <com.google.android.material.chip.ChipGroup
+                        android:id="@+id/chipGroupCategories"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:singleSelection="true"
+                        app:selectionRequired="false"
+                        app:chipSpacingHorizontal="8dp" />
+                </HorizontalScrollView>
+
+                <!-- Hidden text for backward compat -->
+                <TextView
+                    android:id="@+id/categoriesTextView"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:visibility="gone" />
+
+                <!-- Section: Featured Events -->
+                <LinearLayout
+                    android:id="@+id/sectionFeatured"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginTop="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginBottom="8dp"
+                        android:text="Featured Events"
+                        android:textColor="@color/onSurface"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/featured_recycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:clipToPadding="false"
+                        android:overScrollMode="never"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp" />
+                </LinearLayout>
+
+                <!-- Section: Recent Events -->
+                <TextView
+                    android:id="@+id/sectionRecentLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="20dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="Recent Events"
+                    android:textColor="@color/onSurface"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Shimmer placeholder -->
+                <com.facebook.shimmer.ShimmerFrameLayout
+                    android:id="@+id/shimmer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:shimmer_auto_start="true">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="180dp"
+                            android:background="@color/surfaceVariant" />
+
+                        <View
+                            android:layout_width="200dp"
+                            android:layout_height="20dp"
+                            android:layout_marginTop="12dp"
+                            android:background="@color/surfaceVariant" />
+
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="14dp"
+                            android:layout_marginTop="8dp"
+                            android:background="@color/surfaceVariant" />
+                    </LinearLayout>
+                </com.facebook.shimmer.ShimmerFrameLayout>
+
+                <!-- Feed RecyclerView -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@color/background"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
                     android:clipToPadding="false"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="80dp"
-                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                    android:paddingHorizontal="8dp" />
 
-            </com.facebook.shimmer.ShimmerFrameLayout>
+                <!-- Empty state -->
+                <LinearLayout
+                    android:id="@+id/empty_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="48dp"
+                    android:visibility="gone">
 
-            <!-- Categories TextView -->
-            <TextView
-                android:id="@+id/categoriesTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:text="Categories"
-                android:textColor="@color/onSurface"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                android:gravity="center"
-                android:visibility="visible" />
+                    <ImageView
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:src="@drawable/ic_calendar"
+                        android:alpha="0.4"
+                        app:tint="@color/onSurfaceVariant"
+                        tools:ignore="ContentDescription" />
 
-            <!-- Empty state view -->
-            <TextView
-                android:id="@+id/empty_state"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:padding="16dp"
-                android:text="No events to display."
-                android:textColor="@color/onSurfaceVariant"
-                android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:visibility="gone" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center"
+                        android:text="No events yet"
+                        android:textColor="@color/onSurface"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
 
-        </LinearLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center"
+                        android:text="Check back soon for upcoming events"
+                        android:textColor="@color/onSurfaceVariant"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -216,9 +352,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="24dp"
+        android:contentDescription="@string/fab_add_desc"
         android:src="@drawable/ic_add"
-        app:backgroundTint="?attr/colorPrimary"
-        app:tint="?attr/colorOnPrimary"
-        android:contentDescription="@string/fab_add_desc" />
+        android:visibility="gone"
+        app:backgroundTint="@color/primary"
+        app:tint="@color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+

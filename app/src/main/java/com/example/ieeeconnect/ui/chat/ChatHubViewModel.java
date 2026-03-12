@@ -27,4 +27,10 @@ public class ChatHubViewModel extends ViewModel {
     public LiveData<List<User>> getAllUsers() {
         return allUsers;
     }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        repository.cleanup();
+    }
 }

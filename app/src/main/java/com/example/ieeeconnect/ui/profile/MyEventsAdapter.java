@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -17,14 +18,34 @@ import com.example.ieeeconnect.ui.events.EventDetailActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MyEventsAdapter extends RecyclerView.Adapter<MyEventsAdapter.EventViewHolder> {
 
     private List<Event> events = new ArrayList<>();
 
-    public void setEvents(List<Event> events) {
-        this.events = events;
-        notifyDataSetChanged();
+    public void setEvents(List<Event> newEvents) {
+        final List<Event> incoming = newEvents != null ? newEvents : new ArrayList<>();
+        final List<Event> oldEvents = this.events;
+        this.events = incoming;
+
+        DiffUtil.DiffResult result = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override public int getOldListSize() { return oldEvents.size(); }
+            @Override public int getNewListSize() { return incoming.size(); }
+            @Override
+            public boolean areItemsTheSame(int oldPos, int newPos) {
+                return oldEvents.get(oldPos).getEventId().equals(incoming.get(newPos).getEventId());
+            }
+            @Override
+            public boolean areContentsTheSame(int oldPos, int newPos) {
+                Event o = oldEvents.get(oldPos);
+                Event n = incoming.get(newPos);
+                return o.getEventId().equals(n.getEventId())
+                        && o.getTitle().equals(n.getTitle())
+                        && Objects.equals(o.getBannerUrl(), n.getBannerUrl());
+            }
+        });
+        result.dispatchUpdatesTo(this);
     }
 
     @NonNull

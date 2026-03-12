@@ -26,6 +26,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.cloudinary.android.callback.ErrorInfo;
@@ -37,7 +38,9 @@ import com.example.ieeeconnect.databinding.ActivityChatRoomBinding;
 import com.example.ieeeconnect.domain.model.User;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,8 +56,6 @@ public class ChatRoomActivity extends AppCompatActivity {
 
     private static final String TAG = "ChatRoomActivity";
     private static final int PERMISSION_RECORD_AUDIO = 31;
-    
-    // IMPORTANT: Put your FCM Server Key here from Firebase Console -> Project Settings -> Cloud Messaging (Legacy)
     private static final String FCM_SERVER_KEY = "YOUR_LEGACY_SERVER_KEY_HERE";
 
     private ActivityChatRoomBinding binding;
@@ -70,7 +71,12 @@ public class ChatRoomActivity extends AppCompatActivity {
     private String audioPath;
     private long recordStartTime;
     private final Handler recordTimerHandler = new Handler(Looper.getMainLooper());
+    private final Handler typingHandler = new Handler(Looper.getMainLooper());
     private boolean isRecording = false;
+    private boolean isUserAtBottom = true;
+
+    private ListenerRegistration typingListener;
+    private ListenerRegistration onlineListener;
 
     private final ActivityResultLauncher<Intent> pickImageLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -102,7 +108,12 @@ public class ChatRoomActivity extends AppCompatActivity {
         setupRecyclerView();
         setupViewModel();
         setupInputArea();
+        setupScrollToBottom();
+        listenForTypingIndicator();
+        updateLastSeen();
     }
+
+    // ── Current user info ───────────────────────────────────────
 
     private void fetchCurrentUserInfo() {
         String uid = FirebaseAuth.getInstance().getUid();
@@ -119,24 +130,80 @@ public class ChatRoomActivity extends AppCompatActivity {
                 });
     }
 
+    // ── Toolbar ─────────────────────────────────────────────────
+
     private void setupToolbar() {
         setSupportActionBar(binding.toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
 
-        binding.toolbar.setNavigationOnClickListener(v -> onBackPressed());
+        binding.toolbar.setNavigationOnClickListener(v -> finish());
         binding.roomName.setText(roomName != null ? roomName : "Chat");
-        
-        Glide.with(this)
-                .load(roomImage)
-                .placeholder(R.drawable.ic_profile_placeholder)
-                .circleCrop()
-                .into(binding.roomImage);
+
+        if (roomImage != null && !roomImage.isEmpty()) {
+            Glide.with(this)
+                    .load(roomImage)
+                    .placeholder(R.drawable.ic_profile_placeholder)
+                    .error(R.drawable.ic_profile_placeholder)
+                    .circleCrop()
+                    .into(binding.roomImage);
+        } else {
+            binding.roomImage.setImageResource(R.drawable.ic_profile_placeholder);
+        }
+
+        // Resolve online status for the other user in DIRECT chats
+        resolveOnlineStatus();
 
         binding.btnAudioCall.setOnClickListener(v -> startCall(false));
         binding.btnVideoCall.setOnClickListener(v -> startCall(true));
     }
+
+    private void resolveOnlineStatus() {
+        FirebaseFirestore.getInstance().collection("chat_rooms").document(roomId).get()
+                .addOnSuccessListener(doc -> {
+                    if (!doc.exists()) return;
+                    String type = doc.getString("type");
+                    if (!"DIRECT".equals(type)) {
+                        binding.roomStatus.setText("Group chat");
+                        return;
+                    }
+
+                    java.util.List<String> participants = (java.util.List<String>) doc.get("participantIds");
+                    if (participants == null) return;
+                    String myUid = FirebaseAuth.getInstance().getUid();
+                    String otherUid = null;
+                    for (String uid : participants) {
+                        if (!uid.equals(myUid)) { otherUid = uid; break; }
+                    }
+                    if (otherUid == null) return;
+
+                    // Listen for online status changes
+                    DocumentReference userRef = FirebaseFirestore.getInstance()
+                            .collection("users").document(otherUid);
+                    onlineListener = userRef.addSnapshotListener((snap, error) -> {
+                        if (snap != null && snap.exists()) {
+                            Long lastSeen = snap.getLong("lastSeen");
+                            if (lastSeen != null) {
+                                long diff = System.currentTimeMillis() - lastSeen;
+                                if (diff < 2 * 60 * 1000) { // within 2 min
+                                    binding.roomStatus.setText("Active now");
+                                    binding.roomStatus.setTextColor(getResources().getColor(R.color.primary, null));
+                                } else if (diff < 60 * 60 * 1000) { // within 1 hour
+                                    long mins = diff / (60 * 1000);
+                                    binding.roomStatus.setText("Active " + mins + "m ago");
+                                    binding.roomStatus.setTextColor(getResources().getColor(R.color.onSurfaceVariant, null));
+                                } else {
+                                    binding.roomStatus.setText("Offline");
+                                    binding.roomStatus.setTextColor(getResources().getColor(R.color.onSurfaceVariant, null));
+                                }
+                            }
+                        }
+                    });
+                });
+    }
+
+    // ── RecyclerView ────────────────────────────────────────────
 
     private void setupRecyclerView() {
         adapter = new MessageAdapter();
@@ -146,16 +213,24 @@ public class ChatRoomActivity extends AppCompatActivity {
         binding.recyclerMessages.setAdapter(adapter);
     }
 
+    // ── ViewModel ───────────────────────────────────────────────
+
     private void setupViewModel() {
         viewModel = new ViewModelProvider(this).get(ChatViewModel.class);
         viewModel.start(roomId);
 
         viewModel.getMessages().observe(this, messages -> {
             adapter.submitList(messages, () -> {
-                if (adapter.getItemCount() > 0) {
+                if (isUserAtBottom && adapter.getItemCount() > 0) {
                     binding.recyclerMessages.smoothScrollToPosition(adapter.getItemCount() - 1);
+                } else if (!isUserAtBottom) {
+                    // Show scroll-to-bottom hint
+                    binding.btnScrollBottom.setVisibility(View.VISIBLE);
                 }
             });
+
+            // Mark messages as read
+            markMessagesAsRead();
         });
 
         viewModel.getError().observe(this, throwable -> {
@@ -165,13 +240,37 @@ public class ChatRoomActivity extends AppCompatActivity {
         });
     }
 
+    // ── Scroll to bottom ────────────────────────────────────────
+
+    private void setupScrollToBottom() {
+        binding.recyclerMessages.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+                LinearLayoutManager lm = (LinearLayoutManager) rv.getLayoutManager();
+                if (lm != null) {
+                    int lastVisible = lm.findLastCompletelyVisibleItemPosition();
+                    int total = adapter.getItemCount();
+                    isUserAtBottom = lastVisible >= total - 2;
+                    binding.btnScrollBottom.setVisibility(isUserAtBottom ? View.GONE : View.VISIBLE);
+                }
+            }
+        });
+
+        binding.btnScrollBottom.setOnClickListener(v -> {
+            if (adapter.getItemCount() > 0) {
+                binding.recyclerMessages.smoothScrollToPosition(adapter.getItemCount() - 1);
+            }
+            binding.btnScrollBottom.setVisibility(View.GONE);
+        });
+    }
+
+    // ── Input area ──────────────────────────────────────────────
+
     private void setupInputArea() {
         binding.btnSend.setImageResource(R.drawable.ic_mic);
 
         binding.editMessage.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.toString().trim().isEmpty()) {
@@ -179,10 +278,10 @@ public class ChatRoomActivity extends AppCompatActivity {
                 } else {
                     binding.btnSend.setImageResource(R.drawable.ic_send);
                 }
+                // Set typing indicator
+                setTyping(!s.toString().trim().isEmpty());
             }
-
-            @Override
-            public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(Editable s) {}
         });
 
         binding.btnSend.setOnTouchListener((v, event) -> {
@@ -192,6 +291,7 @@ public class ChatRoomActivity extends AppCompatActivity {
                     viewModel.sendMessage(text);
                     notifyOtherParticipants(text, "MESSAGE");
                     binding.editMessage.setText("");
+                    setTyping(false);
                 }
                 return true;
             }
@@ -210,6 +310,95 @@ public class ChatRoomActivity extends AppCompatActivity {
 
         binding.btnAttachment.setOnClickListener(v -> showAttachmentPicker());
     }
+
+    // ── Typing indicator ────────────────────────────────────────
+
+    private final Runnable clearTypingRunnable = () -> {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid != null && roomId != null) {
+            FirebaseFirestore.getInstance().collection("chat_rooms").document(roomId)
+                    .update("typing_" + uid, false);
+        }
+    };
+
+    private void setTyping(boolean typing) {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null || roomId == null) return;
+
+        typingHandler.removeCallbacks(clearTypingRunnable);
+
+        FirebaseFirestore.getInstance().collection("chat_rooms").document(roomId)
+                .update("typing_" + uid, typing);
+
+        if (typing) {
+            // Auto-clear typing after 3 seconds of no input
+            typingHandler.postDelayed(clearTypingRunnable, 3000);
+        }
+    }
+
+    private void listenForTypingIndicator() {
+        String myUid = FirebaseAuth.getInstance().getUid();
+        if (myUid == null) return;
+
+        typingListener = FirebaseFirestore.getInstance().collection("chat_rooms").document(roomId)
+                .addSnapshotListener((snap, error) -> {
+                    if (snap == null || !snap.exists()) return;
+
+                    // Check all typing_<uid> fields
+                    boolean someoneTyping = false;
+                    String typerName = null;
+
+                    Map<String, Object> data = snap.getData();
+                    if (data != null) {
+                        for (Map.Entry<String, Object> entry : data.entrySet()) {
+                            if (entry.getKey().startsWith("typing_") && !entry.getKey().equals("typing_" + myUid)) {
+                                if (Boolean.TRUE.equals(entry.getValue())) {
+                                    someoneTyping = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    if (someoneTyping) {
+                        binding.typingIndicator.setText("typing…");
+                        binding.typingIndicator.setVisibility(View.VISIBLE);
+                    } else {
+                        binding.typingIndicator.setVisibility(View.GONE);
+                    }
+                });
+    }
+
+    // ── Read receipts ───────────────────────────────────────────
+
+    private void markMessagesAsRead() {
+        String myUid = FirebaseAuth.getInstance().getUid();
+        if (myUid == null || roomId == null) return;
+
+        FirebaseFirestore.getInstance().collection("chat_rooms").document(roomId)
+                .collection("messages")
+                .whereEqualTo("isRead", false)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (com.google.firebase.firestore.DocumentSnapshot doc : querySnapshot) {
+                        String senderId = doc.getString("senderId");
+                        if (senderId != null && !senderId.equals(myUid)) {
+                            doc.getReference().update("isRead", true);
+                        }
+                    }
+                });
+    }
+
+    // ── Last seen ───────────────────────────────────────────────
+
+    private void updateLastSeen() {
+        String uid = FirebaseAuth.getInstance().getUid();
+        if (uid == null) return;
+        FirebaseFirestore.getInstance().collection("users").document(uid)
+                .update("lastSeen", System.currentTimeMillis());
+    }
+
+    // ── Voice recording ─────────────────────────────────────────
 
     private void startRecording() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -273,6 +462,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         }
     }
 
+    // ── Attachment picker ───────────────────────────────────────
+
     private void showAttachmentPicker() {
         BottomSheetDialog dialog = new BottomSheetDialog(this);
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_attachment_picker, null);
@@ -287,6 +478,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         pickImageLauncher.launch(Intent.createChooser(intent, "Select Image"));
     }
 
+    // ── File upload ─────────────────────────────────────────────
+
     private void uploadFile(Uri uri, String type) {
         Toast.makeText(this, "Uploading...", Toast.LENGTH_SHORT).show();
         CloudinaryManager.upload(uri, new UploadCallback() {
@@ -294,7 +487,7 @@ public class ChatRoomActivity extends AppCompatActivity {
             public void onSuccess(String requestId, Map resultData) {
                 String url = (String) resultData.get("secure_url");
                 runOnUiThread(() -> {
-                    if (type.equals("AUDIO")) {
+                    if ("AUDIO".equals(type)) {
                         viewModel.sendVoiceMessage(url);
                         notifyOtherParticipants("Sent a voice note", "MESSAGE");
                     } else {
@@ -303,16 +496,16 @@ public class ChatRoomActivity extends AppCompatActivity {
                     }
                 });
             }
-            @Override
-            public void onStart(String requestId) {}
-            @Override
-            public void onProgress(String requestId, long bytes, long totalBytes) {}
-            @Override
-            public void onError(String requestId, ErrorInfo error) {}
-            @Override
-            public void onReschedule(String requestId, ErrorInfo error) {}
+            @Override public void onStart(String requestId) {}
+            @Override public void onProgress(String requestId, long bytes, long totalBytes) {}
+            @Override public void onError(String requestId, ErrorInfo error) {
+                runOnUiThread(() -> Toast.makeText(ChatRoomActivity.this, "Upload failed", Toast.LENGTH_SHORT).show());
+            }
+            @Override public void onReschedule(String requestId, ErrorInfo error) {}
         });
     }
+
+    // ── Calls ───────────────────────────────────────────────────
 
     private void startCall(boolean isVideo) {
         notifyOtherParticipants("Incoming " + (isVideo ? "Video" : "Audio") + " call", "CALL");
@@ -324,6 +517,8 @@ public class ChatRoomActivity extends AppCompatActivity {
         intent.putExtra("isVideo", isVideo);
         startActivity(intent);
     }
+
+    // ── Notifications ───────────────────────────────────────────
 
     private void notifyOtherParticipants(String messageBody, String type) {
         String myUid = FirebaseAuth.getInstance().getUid();
@@ -362,7 +557,6 @@ public class ChatRoomActivity extends AppCompatActivity {
                         data.put("senderName", currentUserName);
                         data.put("senderImage", currentUserImage);
                         data.put("message", body);
-                        data.put("isVideo", String.valueOf(getIntent().getBooleanExtra("isVideo", false)));
 
                         Map<String, Object> payload = new HashMap<>();
                         payload.put("to", token);
@@ -372,13 +566,8 @@ public class ChatRoomActivity extends AppCompatActivity {
                         FCMClient.getClient().sendNotification(headers, payload).enqueue(new Callback<ResponseBody>() {
                             @Override
                             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                                if (response.isSuccessful()) {
-                                    Log.d(TAG, "Notification sent successfully to " + targetUserId);
-                                } else {
-                                    Log.e(TAG, "Notification failed: " + response.code());
-                                }
+                                Log.d(TAG, response.isSuccessful() ? "Notification sent" : "Notification failed: " + response.code());
                             }
-
                             @Override
                             public void onFailure(Call<ResponseBody> call, Throwable t) {
                                 Log.e(TAG, "Notification error", t);
@@ -388,9 +577,29 @@ public class ChatRoomActivity extends AppCompatActivity {
                 });
     }
 
+    // ── Lifecycle ───────────────────────────────────────────────
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateLastSeen();
+        markMessagesAsRead();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        setTyping(false);
+        updateLastSeen();
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
         if (recorder != null) { recorder.release(); recorder = null; }
+        if (typingListener != null) typingListener.remove();
+        if (onlineListener != null) onlineListener.remove();
+        typingHandler.removeCallbacksAndMessages(null);
+        recordTimerHandler.removeCallbacksAndMessages(null);
     }
 }

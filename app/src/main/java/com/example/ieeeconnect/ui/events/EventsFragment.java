@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.ieeeconnect.activities.CreateEventActivity;
 import com.example.ieeeconnect.databinding.FragmentEventsBinding;
@@ -43,6 +44,12 @@ public class EventsFragment extends Fragment {
         binding.recycler.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recycler.setAdapter(adapter);
 
+        // Disable item change animation to prevent flash on list updates
+        RecyclerView.ItemAnimator animator = binding.recycler.getItemAnimator();
+        if (animator instanceof androidx.recyclerview.widget.SimpleItemAnimator) {
+            ((androidx.recyclerview.widget.SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+        }
+
         // USE ACTIVITY SCOPE to stay in sync with HomeFragment
         viewModel = new ViewModelProvider(requireActivity()).get(EventsViewModel.class);
         
@@ -51,11 +58,11 @@ public class EventsFragment extends Fragment {
             if (events == null || events.isEmpty()) {
                 binding.recycler.setVisibility(View.GONE);
                 if (binding.emptyStateText != null) binding.emptyStateText.setVisibility(View.VISIBLE);
-                adapter.submitList(new ArrayList<>()); // Force clear adapter
+                adapter.submitList(events != null ? events : new ArrayList<>());
             } else {
                 binding.recycler.setVisibility(View.VISIBLE);
                 if (binding.emptyStateText != null) binding.emptyStateText.setVisibility(View.GONE);
-                adapter.submitList(new ArrayList<>(events));
+                adapter.submitList(events);
             }
         });
 
@@ -64,13 +71,6 @@ public class EventsFragment extends Fragment {
         });
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (viewModel != null) {
-            viewModel.refreshFromNetwork();
-        }
-    }
 
     @Override
     public void onDestroyView() {

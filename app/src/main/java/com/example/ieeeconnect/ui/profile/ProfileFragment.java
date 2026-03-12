@@ -33,6 +33,7 @@ import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.ieeeconnect.LoginActivity;
@@ -121,6 +122,12 @@ public class ProfileFragment extends Fragment {
         binding.myEventsRecycler.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         binding.myEventsRecycler.setAdapter(myEventsAdapter);
 
+        // Disable change animations to prevent flash on list updates
+        RecyclerView.ItemAnimator animator = binding.myEventsRecycler.getItemAnimator();
+        if (animator instanceof androidx.recyclerview.widget.SimpleItemAnimator) {
+            ((androidx.recyclerview.widget.SimpleItemAnimator) animator).setSupportsChangeAnimations(false);
+        }
+
         // Setup ViewModel — use activity scope so data is shared
         eventsViewModel = new ViewModelProvider(requireActivity()).get(EventsViewModel.class);
 
@@ -190,11 +197,11 @@ public class ProfileFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // Refresh data when returning to the fragment
+        // Refresh user data when returning to the fragment
         loadUserData();
-        if (eventsViewModel != null) {
-            eventsViewModel.refreshFromNetwork();
-        }
+        // No need to call eventsViewModel.refreshFromNetwork() here —
+        // the shared ViewModel is already refreshed by HomeFragment on resume,
+        // and the repository debounces rapid calls.
     }
 
     private void loadUserData() {
@@ -417,10 +424,10 @@ public class ProfileFragment extends Fragment {
         canvas.drawColor(Color.TRANSPARENT);
 
         Paint barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        barPaint.setColor(0xFF7C3AED); // primary purple
+        barPaint.setColor(0xFF386BF6); // brand blue
 
         Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        bgPaint.setColor(0xFFF3E8FF); // surfaceVariant
+        bgPaint.setColor(0xFFE8EEFF); // surfaceVariant (brand blue tint)
 
         Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(0xFF333333);

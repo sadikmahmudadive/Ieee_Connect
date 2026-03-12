@@ -35,6 +35,8 @@ public class EventRepository {
     private final FirebaseFirestore firestore;
     private final MutableLiveData<List<Event>> allEvents;
     private final ExecutorService diskIO = Executors.newSingleThreadExecutor();
+    private volatile long lastFetchTime = 0;
+    private static final long FETCH_DEBOUNCE_MS = 5000; // 5 seconds
 
     public EventRepository(Application application) {
         AppDatabase db = AppDatabase.getDatabase(application);
@@ -60,11 +62,19 @@ public class EventRepository {
                 cached = new ArrayList<>();
             }
             allEvents.postValue(cached);
-            fetchFromFirestore(ctx);
+            // Don't immediately fetch from network here — HomeFragment.onResume
+            // will call refreshFromNetwork(), which is debounced. This prevents
+            // the rapid cached→network double-emission that caused flashing.
         });
     }
 
     public void refreshFromNetwork(Context ctx) {
+        long now = System.currentTimeMillis();
+        if (now - lastFetchTime < FETCH_DEBOUNCE_MS) {
+            Log.d(TAG, "Skipping refresh — debounced (" + (now - lastFetchTime) + "ms since last fetch)");
+            return;
+        }
+        lastFetchTime = now;
         fetchFromFirestore(ctx);
     }
 
@@ -74,7 +84,6 @@ public class EventRepository {
             if (task.isSuccessful() && task.getResult() != null) {
                 List<Event> events = new ArrayList<>();
                 for (QueryDocumentSnapshot document : task.getResult()) {
-                    Log.d(TAG, "Firestore doc: " + document.getId() + " => " + document.getData());
                     try {
                         Event event = document.toObject(Event.class);
                         if (event == null) continue;
@@ -85,7 +94,7 @@ public class EventRepository {
                     }
                 }
 
-                // Crucial fix: Always refresh local DB to match Firestore state
+                // Persist to local DB
                 diskIO.execute(() -> {
                     try {
                         eventDao.refreshEvents(events);
@@ -94,7 +103,14 @@ public class EventRepository {
                     }
                 });
 
-                Log.d(TAG, "Fetched " + events.size() + " events from Firestore");
+                // Only emit if data actually changed — prevents unnecessary flash
+                List<Event> current = allEvents.getValue();
+                if (current != null && current.size() == events.size() && current.equals(events)) {
+                    Log.d(TAG, "Fetched " + events.size() + " events — no changes, skipping emission");
+                    return;
+                }
+
+                Log.d(TAG, "Fetched " + events.size() + " events from Firestore — emitting update");
                 allEvents.postValue(events);
             } else {
                 Log.w(TAG, "Failed to fetch events from Firestore", task.getException());
