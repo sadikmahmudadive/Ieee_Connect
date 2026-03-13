@@ -1,0 +1,51 @@
+JAVA_HOME=C:\Program Files\Android\Android Studio\jbr
+openjdk version "21.0.8" 2025-07-15
+OpenJDK Runtime Environment (build 21.0.8+-14196175-b1038.72)
+OpenJDK 64-Bit Server VM (build 21.0.8+-14196175-b1038.72, mixed mode)
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugResValues
+> Task :app:dataBindingMergeDependencyArtifactsDebug
+> Task :app:generateDebugResources
+> Task :app:processDebugGoogleServices
+> Task :app:mergeDebugResources
+> Task :app:packageDebugResources
+> Task :app:dataBindingTriggerDebug
+> Task :app:mapDebugSourceSetPaths
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:checkDebugAarMetadata
+> Task :app:parseDebugLocalResources
+
+> Task :app:processDebugMainManifest
+[io.agora.rtc:full-sdk:4.6.1] C:\Users\Admin\.gradle\caches\8.13\transforms\dbffe15055a9ab806f8a50da9c491647\transformed\full-sdk-4.6.1\AndroidManifest.xml Warning:
+	Namespace 'io.agora.rtc' is used in multiple modules and/or libraries: io.agora.rtc:full-sdk:4.6.1, io.agora.rtc:full-rtc-basic:4.6.1, io.agora.rtc:ains:4.6.1, io.agora.rtc:audio-beauty:4.6.1, io.agora.rtc:clear-vision:4.6.1, io.agora.rtc:full-content-inspect:4.6.1, io.agora.rtc:screen-capture:4.6.1, io.agora.rtc:full-virtual-background:4.6.1, io.agora.rtc:spatial-audio:4.6.1, io.agora.rtc:aiaec:4.6.1, io.agora.rtc:full-vqa:4.6.1, io.agora.rtc:full-face-detect:4.6.1, io.agora.rtc:full-face-capture:4.6.1, io.agora.rtc:full-voice-drive:4.6.1, io.agora.rtc:full-video-codec-enc:4.6.1, io.agora.rtc:full-video-codec-dec:4.6.1, io.agora.rtc:full-video-av1-codec-enc:4.6.1, io.agora.rtc:full-video-av1-codec-dec:4.6.1. Please ensure that all modules and libraries have a unique namespace. For more information, See https://developer.android.com/studio/build/configure-app-module#set-namespace
+
+> Task :app:dataBindingGenBaseClassesDebug
+> Task :app:processDebugManifest
+> Task :app:processDebugManifestForPackage
+> Task :app:javaPreCompileDebug
+> Task :app:processDebugResources
+
+> Task :app:kspDebugKotlin
+w: [ksp] F:/Code/android_app/ieeeconnect/app/src/main/java/com/example/ieeeconnect/domain/model/Event.java:16: There are multiple good constructors and Room will pick the no-arg constructor. You can use the @Ignore annotation to eliminate unwanted constructors.
+
+> Task :app:kaptGenerateStubsDebugKotlin
+w: Support for language version 2.0+ in kapt is in Alpha and must be enabled explicitly. Falling back to 1.9.
+
+> Task :app:kaptDebugKotlin
+Note: [1] Wrote GeneratedAppGlideModule with: []
+
+> Task :app:compileDebugKotlin
+
+> Task :app:compileDebugJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Note: F:\Code\android_app\ieeeconnect\app\src\main\java\com\example\ieeeconnect\ui\chat\ChatRoomActivity.java uses unchecked or unsafe operations.
+Note: Recompile with -Xlint:unchecked for details.
+
+[Incubating] Problems report is available at: file:///F:/Code/android_app/ieeeconnect/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 47s
+23 actionable tasks: 23 executed

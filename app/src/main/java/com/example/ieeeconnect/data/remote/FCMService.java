@@ -10,6 +10,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
+import android.graphics.Color;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -85,6 +86,11 @@ public class FCMService extends FirebaseMessagingService {
                     channel.setSound(soundUri, attrs);
                     channel.enableVibration(true);
                     channel.setVibrationPattern(new long[]{0, 250, 250, 250});
+                    // Use brand color for channel lights where supported
+                    try {
+                        channel.enableLights(true);
+                        channel.setLightColor(Color.parseColor("#FF386BF6"));
+                    } catch (Exception ignored) {}
                     notificationManager.createNotificationChannel(channel);
                     Log.d("FCMService", "Notification channel created/recreated: " + CHANNEL_ID);
                 }
@@ -141,7 +147,16 @@ public class FCMService extends FirebaseMessagingService {
         intent.putExtra("roomId", data.get("roomId"));
         intent.putExtra("roomName", data.get("senderName"));
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        int requestCode = 0;
+        try {
+            String roomId = data.get("roomId");
+            if (roomId != null) requestCode = Math.abs(roomId.hashCode());
+            else requestCode = (int) (System.currentTimeMillis() & 0xfffffff);
+        } catch (Exception e) {
+            requestCode = (int) (System.currentTimeMillis() & 0xfffffff);
+        }
+
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, requestCode, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_chat)
@@ -151,10 +166,13 @@ public class FCMService extends FirebaseMessagingService {
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent)
                 .setSound(soundUri)
-                .setDefaults(NotificationCompat.DEFAULT_ALL);
+                .setDefaults(NotificationCompat.DEFAULT_ALL)
+                .setColor(Color.parseColor("#FF386BF6"))
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(data.get("message")));
 
         // Use roomId-based notification id so notifications from same chat update instead of stacking
-        int notifId = 0;
+        int notifId;
         try {
             String roomId = data.get("roomId");
             if (roomId != null) notifId = Math.abs(roomId.hashCode());
@@ -204,6 +222,7 @@ public class FCMService extends FirebaseMessagingService {
     @Override
     public void onNewToken(@NonNull String token) {
         super.onNewToken(token);
+        Log.d("FCMService", "onNewToken: " + token);
         updateTokenInFirestore(token);
     }
 
